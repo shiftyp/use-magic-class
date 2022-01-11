@@ -1,0 +1,19 @@
+{
+    "include": [
+        "./src/**/*"
+    ],
+    "compilerOptions": {
+        "strict": true,
+        "target": "ES6",
+        "module": "CommonJS",
+        "esModuleInterop": true,
+        "lib": [
+            "ESNext",
+            "DOM",
+            "ES2018.AsyncGenerator"
+        ],
+        "jsx": "react",
+        "charset": "utf-16",
+        "experimentalDecorators": true
+    }
+}
