@@ -6,8 +6,7 @@
     "esModuleInterop": true,
     "lib": [
       "ESNext",
-      "DOM",
-      "ES2018.AsyncGenerator"
+      "DOM"
     ],
     "jsx": "react",
     "charset": "utf-16",
