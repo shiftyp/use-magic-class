@@ -151,7 +151,7 @@ class Memo {
 
 #### **isMagic**
 
-Decorates a nested magic class property. The property should be initialized as an instance of the magec class. Maps internally to a `useMagicClass` call.
+Decorates a nested magic class property. The property should be initialized as an instance of the magic class. Maps internally to a `useMagicClass` call.
 
 ```typescript
 import { isState, isMagic } from 'use-magic-class'
