@@ -7,7 +7,6 @@
     "declarationMap": true
   },
   "references": [
-    { "path": "../../magic" },
     { "path": "../common" }
   ]
 }
