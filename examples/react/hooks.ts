@@ -1,4 +1,4 @@
-import React from "react"
+import { createContext } from "react"
   
 import { isContext, isEffect, isMemo, isState, isMagic } from "use-magic-class"
 
@@ -94,7 +94,7 @@ export class User extends RequestData<{ id: Number }> {
   }
 }
 
-export const UserContext = React.createContext<User | null>(null)
+export const UserContext = createContext<User | null>(null)
 
 export class Filter {
   @isState

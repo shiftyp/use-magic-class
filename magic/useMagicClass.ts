@@ -8,7 +8,7 @@ const memoMetadataKey = Symbol()
 const magicMetadataKey = Symbol()
 
 interface Context<T> {
-  Provider: ((props: { value: T }) => any) | { props: { value: T } }
+  Provider: ((props: { value: T, children: any }) => any) | { props: { value: T } }
   Consumer:
     | ((props: { children: (value: T) => any }) => any)
     | { props: { children: (value: T) => any } }

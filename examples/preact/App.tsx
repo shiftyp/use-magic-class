@@ -11,7 +11,7 @@ import {
   PostList,
   RequestData,
   Post
-} from "common-example/hooks"
+} from "./hooks"
 
 const Login = ({ user }: { user: User }) => {
   const form = useRef<HTMLFormElement>(null)
