@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions" : {
+    "rootDir": ".",
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationMap": true,
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment"
+  },
+  "references": [
+    { "path": "../../magic" },
+    { "path": "../common" }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+    "name": "preact-example",
+    "private": true,
+    "version": "1.0.0",
+    "main": "index.tsx",
+    "dependencies": {
+        "common-example": "*",
+        "preact": "10.6.4",
+        "use-magic-class": "*",
+        "vite": "2.6.14"
+    },
+    "devDependencies": {
+        "typescript": "4.4.4"
+    },
+    "scripts": {
+        "start": "vite"
+    },
+    "browserslist": [
+        ">0.2%",
+        "not dead",
+        "not ie <= 11",
+        "not op_mini all"
+    ]
+}

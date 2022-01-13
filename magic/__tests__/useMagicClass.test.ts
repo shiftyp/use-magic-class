@@ -1,5 +1,4 @@
 import * as magic from '../useMagicClass'
-import { useLayoutEffect } from 'preact/hooks'
 
 const TestContext = Symbol()
 const contextValue = Symbol()

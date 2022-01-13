@@ -1,11 +1,11 @@
 import 'reflect-metadata'
 
-const stateMetadataKey = Symbol('🇺🇸')
-const effectMetadataKey = Symbol('⁉️')
-const layoutEffectMetadataKey = Symbol('‼️')
-const contextMetadataKey = Symbol('☁️')
-const memoMetadataKey = Symbol('📝')
-const magicMetadataKey = Symbol('🔮')
+const stateMetadataKey = Symbol()
+const effectMetadataKey = Symbol()
+const layoutEffectMetadataKey = Symbol()
+const contextMetadataKey = Symbol()
+const memoMetadataKey = Symbol()
+const magicMetadataKey = Symbol()
 
 interface Context<T> {
   Provider: ((props: { value: T }) => any) | { props: { value: T } }
@@ -190,7 +190,7 @@ export const createUseMagicClass =
               (magicObj) => (store[key as keyof Obj] = magicObj),
               targetObj,
             ])
-          } else if (getIsState(keys[key], key)) {
+          } else if (chain.find(target => getIsState(target, key))) {
             states.push([
               (value, setState) => {
                 store[key as keyof Obj] = value
