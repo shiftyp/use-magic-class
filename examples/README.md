@@ -1,4 +1,4 @@
-# Exanples
+# Examples
 
 ## Common
 
