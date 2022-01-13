@@ -1,4 +1,4 @@
-import * as magic from '../useMagicClass'
+import * as magic from '../src/useMagicClass'
 
 const TestContext = Symbol()
 const contextValue = Symbol()
