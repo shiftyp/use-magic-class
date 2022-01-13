@@ -2,6 +2,7 @@
   "files": [],
   "references": [
     { "path": "./magic" },
+    { "path": "./magic/__tests__" },
     { "path": "./examples/common" },
     { "path": "./examples/react" },
     { "path": "./examples/preact" }
