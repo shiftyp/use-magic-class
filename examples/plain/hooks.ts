@@ -1,4 +1,4 @@
-import { createContext, useState, useMemo, useContext, useEffect } from "react"
+import { createContext, useState, useMemo, useContext, useEffect, useCallback } from "react"
   
 export type Post = {
   id: string
@@ -20,7 +20,7 @@ export const useRequestData = <Payload>(msgs: Partial<Record<ErrorStatus, string
     )
   }, [err])
 
-  const doFetch = async (url: string, init?: RequestInit) => {
+  const doFetch = useCallback(async (url: string, init?: RequestInit) => {
     const resp = await fetch(url, init)
 
     switch (resp.status) {
@@ -36,7 +36,7 @@ export const useRequestData = <Payload>(msgs: Partial<Record<ErrorStatus, string
     }
 
     return err
-  }
+  }, [])
 
   return {
     payload,
@@ -63,7 +63,7 @@ export const useUser = () => {
     return payload && payload.id
   }, [payload])
 
-  const login = async () => {
+  const login = useCallback(async () => {
     const err = await doFetch("/login", {
       method: "post",
       body: JSON.stringify({
@@ -77,9 +77,9 @@ export const useUser = () => {
     }
 
     setPass("")
-  }
+  }, [name, pass])
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     if (id !== null) {
       const err = await doFetch("/logout", {
         method: "post",
@@ -92,7 +92,7 @@ export const useUser = () => {
         setPayload(null)
       }
     }
-  }
+  }, [id])
 
   return {
     ...reqData,
@@ -113,9 +113,9 @@ export const UserContext = createContext<User | null>(null)
 export const useFilter = () => {
   const [query, search] = useState<string | null>(null)
 
-  const clear = () => {
+  const clear = useCallback(() => {
     search(null)
-  }
+  }, [])
 
   return {
     query,
@@ -130,7 +130,7 @@ export const useSort = () => {
   const [column, setColumn] = useState<"title" | "date">("date")
   const [ascending, setAscending] = useState<boolean>(true)
 
-  const change = ({
+  const change = useCallback(({
     newColumn = column,
     newAscending = newColumn === "date" ? false : true,
   } : {
@@ -139,7 +139,7 @@ export const useSort = () => {
   }) => {
     setColumn(newColumn)
     setAscending(newAscending)
-  }
+  }, [column])
 
   return {
     column,
