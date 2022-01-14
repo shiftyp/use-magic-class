@@ -1,11 +1,17 @@
 {
-  "extends": "../tsconfig.base.json",
   "exclude": [
     "__tests__"
   ],
   "compilerOptions" : {
     "rootDir": ".",
     "outDir": "./dist",
+    "strict": true,
+    "module": "CommonJS",
+    "lib": [
+      "ESNext",
+    ],
+    "charset": "utf-16",
+    "composite":true
   },
   "references": [{ "path": "./__tests__" }]
 }

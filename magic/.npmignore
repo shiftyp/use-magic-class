@@ -1,2 +1,4 @@
 __tests__
-dist/__tests__
+.gitignore
+jest.config.jest
+node_modules
