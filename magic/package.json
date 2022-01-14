@@ -1,8 +1,16 @@
 {
   "name": "use-magic-class",
   "version": "0.1.1",
+  "keywords": ["react", "hooks"],
   "dependencies": {
     "reflect-metadata": "0.1.13"
+  },
+  "repository": {
+    "url": "https://github.com/shiftyp/use-magic-class"
+  },
+  "author": {
+    "email": "lynch.r.j@gmail.com",
+    "name": "Ryan Lynch"
   },
   "main": "index.ts",
   "devDependencies": {
