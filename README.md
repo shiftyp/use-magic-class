@@ -8,8 +8,8 @@ A hook and class decorators for composing custom react / preact hooks declarativ
 
 ```tsx
 import React from 'react'
-import { isState, isEffect } from 'use-magic-object'
-import { useMagicClass } from 'use-magic-object/react'
+import { isState, isEffect } from 'use-magic-class'
+import { useMagicClass } from 'use-magic-class/react'
 
 class MagicClass {
   @isState
