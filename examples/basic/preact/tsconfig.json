@@ -9,7 +9,7 @@
     "jsxFragmentFactory": "Fragment"
   },
   "references": [
-    { "path": "../../magic" },
+    { "path": "../../../magic" },
     { "path": "../common" }
   ]
 }
