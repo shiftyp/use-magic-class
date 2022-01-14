@@ -26,7 +26,8 @@ jobs:
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org/
-          working_directory: magic
+          
       - run: npm publish
+        working-directory: ./magic
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
