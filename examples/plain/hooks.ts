@@ -1,7 +1,5 @@
 import { createContext, useState, useMemo, useContext, useEffect } from "react"
   
-import { isContext, isEffect, isMemo, isState, isMagic } from "use-magic-class"
-
 export type Post = {
   id: string
   title: string

@@ -7,7 +7,6 @@ import {
   Sort,
   Filter,
   usePostList,
-  RequestData,
   Post
 } from "./hooks"
 
