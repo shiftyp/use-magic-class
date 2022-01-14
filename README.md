@@ -19,7 +19,7 @@ class MagicClass {
     [statefulValue]
   ))
   public logValue() {
-    console.log(ths.statefulValue)
+    console.log(this.statefulValue)
   }
 }
 
