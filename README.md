@@ -2,7 +2,7 @@
 
 [![use-magic-class tests](https://github.com/shiftyp/use-magic-class/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/shiftyp/use-magic-class/actions/workflows/test.yml)
 
-A hook and class decorators for composing custom react / preact hooks declaratively as class instances, rather than using a plain composed function. The goal is to provide an alternative and ergonomic classical machanism for constructing, composing, and extending custom hooks and their returned api's.
+A hook and class decorators for composing custom react / preact hooks declaratively as class instances, rather than using a plain composed function. The goal is to provide an alternative and ergonomic classical mechanism for constructing, composing, and extending custom hooks and their returned api's.
 
 ## Example
 
