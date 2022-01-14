@@ -11,7 +11,8 @@
       "ESNext",
     ],
     "charset": "utf-16",
-    "composite":true
+    "composite":true,
+    "experimentalDecorators": true
   },
   "references": [{ "path": "./__tests__" }]
 }
