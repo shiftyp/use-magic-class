@@ -7,11 +7,21 @@ const contextMetadataKey = Symbol()
 const memoMetadataKey = Symbol()
 const magicMetadataKey = Symbol()
 
-interface Context<T> {
-  Provider: ((props: { value: T, children: any }) => any) | { props: { value: T, children: any } }
+interface Context<
+  T,
+  ProviderProps = { props: { value: T; children: any } },
+  ConsumerProps = { children: (value: T) => any }
+> {
+  Provider:
+    | ((props: { value: T; children: any }) => any)
+    | {
+        new (props: ProviderProps): { props: ProviderProps }
+      }
   Consumer:
-    | ((props: { children: (value: T) => any }) => any)
-    | { props: { children: (value: T) => any } }
+    | ((props: ConsumerProps) => any)
+    | {
+        new (props: ConsumerProps): { props: ConsumerProps }
+      }
 }
 
 type Constructor<T = any> =
@@ -21,6 +31,7 @@ type Constructor<T = any> =
   | {
       (): T
     }
+  | T
 
 export const isState = Reflect.metadata(stateMetadataKey, true)
 
@@ -67,37 +78,43 @@ const getIsMagic = (target: any, propertyKey: string) => {
   return Reflect.getMetadata(magicMetadataKey, target, propertyKey)
 }
 
-export const createUseMagicClass =
-  ({
-    useEffect,
-    useLayoutEffect,
-    useState,
-    useContext,
-    useMemo,
-  }: {
-    useEffect: (
-      cb: () => void | (() => void),
-      dependencies: any[] | undefined
-    ) => void
-    useLayoutEffect: (
-      cb: () => void | (() => void),
-      dependencies: any[] | undefined
-    ) => void
-    useState: <T>(initial: T) => [T, (value: T) => void]
-    useContext: <T>(context: Context<T>) => T
-    useMemo: <T>(cb: () => T, dependencies: any[]) => T
-  }) => {
-    const useMagicClass = <Obj extends Object>(Constructor: Constructor<Obj>) => {
+export const createUseMagicClass = ({
+  useEffect,
+  useLayoutEffect,
+  useState,
+  useContext,
+  useMemo,
+}: {
+  useEffect: (
+    cb: () => void | (() => void),
+    dependencies: any[] | undefined
+  ) => void
+  useLayoutEffect: (
+    cb: () => void | (() => void),
+    dependencies: any[] | undefined
+  ) => void
+  useState: <T>(initial: T) => [T, (value: T) => void]
+  useContext: <T>(context: Context<T>) => T
+  useMemo: <T>(cb: () => T, dependencies: any[]) => T
+}) => {
+  const useMagicClass = <Obj extends Object>(Constructor: Constructor<Obj>) => {
+    const ignoreChanges = typeof Constructor === 'function'
+    const memoDeps = [ignoreChanges ? true : Constructor]
+
     const [obj, magic, states, effects, layoutEffects, memos, contexts] =
       useMemo(() => {
         let obj: Obj = {} as Obj
 
-        try {
-          // @ts-ignore
-          obj = new Constructor()
-        } catch {
-          // @ts-ignore
-          obj = Constructor()
+        if (typeof Constructor === 'function') {
+          try {
+            // @ts-ignore
+            obj = new Constructor()
+          } catch {
+            // @ts-ignore
+            obj = Constructor()
+          }
+        } else {
+          obj = Constructor
         }
 
         let target = obj
@@ -118,7 +135,10 @@ export const createUseMagicClass =
 
         const store: Partial<Obj> = {}
         const magic: [(obj: any) => void, any][] = []
-        const states: [(value: any, setState: (value: any) => void) => void, string][] = []
+        const states: [
+          (value: any, setState: (value: any) => void) => void,
+          string
+        ][] = []
         const effects: [any[] | (() => any[] | void), string][] = []
         const layoutEffects: [any[] | (() => any[] | void), string][] = []
         const contexts: [
@@ -190,7 +210,7 @@ export const createUseMagicClass =
               (magicObj) => (store[key as keyof Obj] = magicObj),
               targetObj,
             ])
-          } else if (chain.find(target => getIsState(target, key))) {
+          } else if (chain.find((target) => getIsState(target, key))) {
             states.push([
               (value, setState) => {
                 store[key as keyof Obj] = value
@@ -219,13 +239,13 @@ export const createUseMagicClass =
           contexts,
         ] as const
         /* eslint-disable */
-      }, [])
+      }, [...memoDeps])
     /* eslint-enable */
 
     magic.forEach(([init, obj]) => {
       /* eslint-disable */
       // @ts-ignore
-      const magicObj = useMagicClass(() => obj)
+      const magicObj = useMagicClass(obj)
       useMemo(() => init(magicObj), [])
       /* eslint-enable */
     })
@@ -234,7 +254,10 @@ export const createUseMagicClass =
       /* eslint-disable */
       // @ts-ignore
       const [value, setState] = useState(() => obj[key])
-      useMemo(() => init(value, setState), [])
+      useEffect(() => {
+        setState(() => obj[key as keyof Obj])
+      }, [memoDeps])
+      useMemo(() => init(value, setState), [...memoDeps])
       /* eslint-enable */
     })
 
@@ -257,7 +280,7 @@ export const createUseMagicClass =
         // @ts-ignore
         () => (obj[key] = get()),
         // @ts-ignore
-        Array.isArray(dependencies) ? dependencies : dependencies(obj)
+        dependencies && [...(Array.isArray(dependencies) ? dependencies : dependencies(obj)), ...memoDeps]
         /* eslint-enable */
       )
     })
@@ -273,7 +296,7 @@ export const createUseMagicClass =
           }
         },
         // @ts-ignore
-        Array.isArray(dependencies) ? dependencies : dependencies(obj)
+        dependencies && Array.isArray(dependencies) ? dependencies : dependencies(obj)
         /* eslint-enable */
       )
     })
@@ -289,7 +312,7 @@ export const createUseMagicClass =
           }
         },
         // @ts-ignore
-        Array.isArray(dependencies) ? dependencies : dependencies(obj)
+        dependencies && Array.isArray(dependencies) ? dependencies : dependencies(obj)
         /* eslint-enable */
       )
     })

@@ -235,6 +235,7 @@ describe('useMagicClass', () => {
 
     expect(MemoClass.memoCallback).toHaveBeenCalledTimes(0)
   })
+
   it('should call inner magic hooks', () => {
     const instance = useMagicClass(OuterMagicClass)
 
@@ -242,5 +243,25 @@ describe('useMagicClass', () => {
 
     expect((hooks.useMemo as jest.MockedFn<any>).mock.results[0].value[0]).toBe(instance)
     expect((hooks.useMemo as jest.MockedFn<any>).mock.results[1].value[0]).toBe(instance.inner)
+  })
+
+  it('should take a plain object', () => {
+    let instance = new OuterMagicClass()
+
+    let magicInstance = useMagicClass(instance)
+
+    expect(magicInstance).toBe(instance)
+
+    expect(hooks.useMemo).toHaveBeenCalledTimes(2 + 1 /* for init */)
+
+    ;(hooks.useMemo as jest.MockedFn<any>).mockClear()
+
+    instance = new OuterMagicClass()
+
+    magicInstance = useMagicClass(instance)
+
+    expect(magicInstance).toBe(instance)
+
+    expect(hooks.useMemo).toHaveBeenCalledTimes(2 + 1 /* for init */)
   })
 })
