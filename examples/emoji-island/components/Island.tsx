@@ -2,12 +2,18 @@ import React, { useMemo } from 'react'
 
 import AutoSizer from 'react-virtualized-auto-sizer'
 import { Grid } from './Grid'
+import { useMagicClass } from 'use-magic-class/react'
+import { Game } from '../hooks/game'
 
 const islandPath =
   'm97.761463,-4.0381c18.427334,-1.280909 16.683508,25.048933 19.156094,40.586017c2.472602,15.537084 1.067116,48.949192 -6.715047,62.994304c-7.782163,14.045098 -21.941018,8.748924 -36.698514,14.150895c-14.783514,5.427692 -33.288932,-1.165823 -48.905324,-6.670693c-15.64241,-5.530578 -26.808122,1.770075 -34.980706,-11.812009c-8.172569,-13.607806 -12.050641,-42.482334 -8.615041,-58.096582c3.409582,-15.614248 2.420551,-35.301098 14.809547,-44.715954c12.388996,-9.414842 38.156036,-8.557705 54.058732,-8.892112c15.876663,-0.334407 29.46291,13.737044 47.89026,12.456134z'
 
 export const Island = () => {
   const freq = useMemo(() => Math.random() * 0.05, [])
+  const game = useMagicClass(Game)
+
+  const turbulenceFreq = 0.04 * (game.scale / 7)
+
   return (
     <AutoSizer>
       {({ height, width }) => {
@@ -18,6 +24,8 @@ export const Island = () => {
             style={{
               height,
               width,
+              display: 'flex',
+              flexDirection: 'column',
             }}
           >
             <svg
@@ -25,8 +33,8 @@ export const Island = () => {
               className="island"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="-25 -25 175 175"
-              height={size}
-              width={size}
+              height={size - 100}
+              width={size - 100}
             >
               <defs>
                 <radialGradient id="color">
@@ -37,7 +45,7 @@ export const Island = () => {
                 <filter id="displacementFilter">
                   <feTurbulence
                     type="turbulence"
-                    baseFrequency="0.04"
+                    baseFrequency={turbulenceFreq}
                     numOctaves="2"
                     result="turbulence"
                   />
@@ -57,13 +65,13 @@ export const Island = () => {
                   />
                   <feColorMatrix
                     in="noise"
-                    type="saturation"
+                    type="saturate"
                     values="0"
                     result="saturation"
                   />
                   <feTurbulence
-                    type="turblence"
-                    baseFrequency="0.04"
+                    type="turbulence"
+                    baseFrequency={turbulenceFreq}
                     numOctaves="2"
                     result="turbulence"
                   />
@@ -86,11 +94,7 @@ export const Island = () => {
                     result="dunes"
                   />
                   <feBlend in="dunes" in2="sand" mode="overlay" result="fill" />
-                  <feMorphology
-                    in="SourceAlpha"
-                    operator="erode"
-                    radius="1.5rem"
-                  />
+                  <feMorphology in="SourceAlpha" operator="erode" radius="1" />
                   <feComposite in="fill" operator="in" result="fill-area" />
                   <feMerge>
                     <feMergeNode in="fill-area" />
@@ -118,8 +122,28 @@ export const Island = () => {
                   />
                 </path>
               </g>
-              <Grid />
+              <g
+                style={{
+                  transform: `scale(${7 / game.scale}`,
+                  transformOrigin: '15px 15px',
+                }}
+              >
+                <Grid game={game} />
+              </g>
             </svg>
+            <form>
+              <label>
+                <span>Island Size</span>
+                <input
+                  type="number"
+                  min="7"
+                  max="30"
+                  step="1"
+                  value={game.scale}
+                  onChange={(e) => (game.scale = e.target.valueAsNumber)}
+                />
+              </label>
+            </form>
           </div>
         )
       }}

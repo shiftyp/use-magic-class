@@ -11,8 +11,32 @@ export type SquareProps = {
   onClick?: () => void
   layer?: number
   animate?: boolean
-  className?: string,
-  entity: Entity
+  className?: string
+}
+
+export class SquareBoundary extends React.Component<
+  { entity: Entity },
+  { hasError: boolean }
+> {
+  constructor(props: { entity: Entity }) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <button className="square-button" style={{ background: 'red' }}>
+          {this.props.entity.emoji}
+        </button>
+      )
+    }
+    return this.props.children
+  }
 }
 
 export const Square: React.FunctionComponent<SquareProps> = ({
@@ -23,32 +47,19 @@ export const Square: React.FunctionComponent<SquareProps> = ({
   position,
   onClick,
   layer = 1,
-  entity,
 }) => {
-  useMagicClass(entity)
-  return (<button
-    key="button"
-    className="square-button"
-    onClick={onClick}
-    style={{
-      top: `${position[1] * 12 + 5}px`,
-      left: `${position[0] * 12 + 5}px`,
-      border: `0.2rem solid ${background}`,
-      background: `radial-gradient(${background}, rgba(0, 0, 0, 0))`,
-    }}
-    title={title}
-  >
-    <span
-      key="emoji"
-      className="square"
-      role="img"
-      aria-label={title}
+  return (
+    <button
+      key="button"
+      className="square-button"
+      onClick={onClick}
       style={{
-        zIndex: layer,
+        border: `0.2rem solid ${background}`,
+        background: `radial-gradient(${background}, rgba(0, 0, 0, 0))`,
       }}
+      title={title}
     >
-      {entity.emoji}
-    </span>
-  </button>
-)
-    }
+      {' '}
+    </button>
+  )
+}

@@ -1,99 +1,159 @@
-import { isEffect, isMemo, isState } from "use-magic-class";
-import { Entities, Entity, EntityName, Space } from "./entities";
+import { isEffect, isMemo, isState, isStateCollection } from 'use-magic-class'
+import { Entities, Entity, EntityName, Space } from './entities'
 
+const pickRandom = <T>(arr: T[]): T => {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
 export class Game {
   @isState
   public scale = 7
 
-  @isState
-  private generation: number = 0
+  @isEffect<Game>(({ scale }) => [scale])
+  private makeEntities() {
+    this.ctors = new Map()
+    this.entities = []
+    this.entitiesSet = new Set()
 
-  @isMemo<Game>(({ scale }) => [scale])
-  public get entities() {
-    const ctors: (new () => Entity)[] = []
-    const entities: Entity[] = []
+    const choices: { new (): Entity }[] = []
 
-    Object.values(Entities).forEach(ctor => {
+    Object.values(Entities).forEach((ctor) => {
+      const ctorEntities: Entity[] = []
+
+      for (let i = 0; i < this.scale ** 2; i++) {
+        ctorEntities[ctorEntities.push(new ctor()) - 1].position = [-1, -1]
+      }
+
+      this.ctors.set(ctor, ctorEntities)
+
       for (let i = 0; i < ctor.weight; i++) {
-        ctors.push(ctor)
+        choices.push(ctor)
       }
     })
 
-    for (let i = 0; i < this.scale ** 2; i++) {
-      entities.push(new ctors[Math.floor(Math.random() * ctors.length)]())
+
+    for (const entity of Array.from(this.ctors.values()).reduce((all, entities) => [...all, ...entities], [])) {
+      this.entitiesSet.add(entity)
     }
 
-    return entities
+    for (let i = 0; i < this.scale ** 2; i++) {
+      const entity = this.newEntity(pickRandom(choices))
+      entity.position = [i % this.scale, Math.floor(i / this.scale)]
+      this.entities.push(entity)
+    }
   }
+
+  @isState
+  private ctors = new Map<{ new () : Entity }, Entity[]>()
+
+  @isState
+  private entities: Entity[] = []
+
+  @isState
+  private entitiesSet = new Set<Entity>()
+
+  lastActed = new WeakMap<Entity, number>()
 
   public peek(entity: Entity) {
     const index = this.entities.indexOf(entity)
 
-    const checks = [
-      index - this.scale - 1,
-      index - this.scale,
-      index - this.scale + 1,
-      index - 1,
-      index + 1,
-      index + this.scale - 1,
-      index + this.scale,
-      index + this.scale + 1,
-    ]
+    const col = index % this.scale
+    const row = Math.floor(index / this.scale)
 
-    return checks.map(checkIndex => this.entities[checkIndex]).filter(entity => !!entity).reduce<Partial<Record<EntityName, Entity[]>>>((map, entity) => {
-      return {
-        ...map,
-        [entity.entityName]: [...(map[entity.entityName] ?? []), entity]
-      }
-    }, {})
+    const firstCol = col === 0
+    const lastCol = col === this.scale - 1
+    const firstRow = row === 0
+    const lastRow = row === this.scale - 1
+
+    const checks = [
+      !firstRow && !firstCol && index - this.scale - 1,
+      !firstRow && index - this.scale,
+      !firstRow && !lastCol && index - this.scale + 1,
+      !firstCol && index - 1,
+      !lastCol && index + 1,
+      !lastRow && !firstCol && index + this.scale - 1,
+      !lastRow && index + this.scale,
+      !lastRow && !lastCol && index / this.scale < 1 && index + this.scale + 1,
+    ].filter<number>((check): check is number => check !== false)
+
+    return checks.map((checkIndex) => this.entities[checkIndex])
   }
 
   public peekRandom(entity: Entity, ...ctors: { new (): Entity }[]) {
-    const index = this.entities.indexOf(entity)
-
-    const checks = [
-      index - this.scale - 1,
-      index - this.scale,
-      index - this.scale + 1,
-      index - 1,
-      index + 1,
-      index + this.scale - 1,
-      index + this.scale,
-      index + this.scale + 1,
-    ]
-
-    let entities = checks.map(checkIndex => this.entities[checkIndex]).filter(entity => !!entity)
+    let entities = this.peek(entity)
 
     if (ctors.length) {
-      entities = entities.filter(entity => ctors.find(ctor => entity.is(ctor)))
+      entities = entities.filter((entity) =>
+        ctors.find((ctor) => entity.is(ctor))
+      )
     }
 
     if (!entities.length) {
       return null
     }
 
-    return entities[Math.floor(Math.random() * entities.length)]
+    return pickRandom(entities)
   }
 
-  public replace(a: Entity | null, b: Entity | null) {
-    if (!a || !b) {
-      return
+  public replace(a: Entity, b: Entity | { new (): Entity }) {
+    const bIndex = typeof b === 'function' ? -1 : this.entities.indexOf(b)
+    const aIndex = this.entities.indexOf(a)
+
+    const bEntity = typeof b === 'function' ? this.newEntity(b) : b
+
+    if (bIndex >= 0) {
+      const space = this.newEntity(Space)
+      space.position = bEntity.position
+      this.entities.splice(bIndex, 1, space)
     }
 
-    const bIndex = this.entities.indexOf(b)
-    
-    if (bIndex > 0) {
-      this.entities.splice(bIndex, 1, new Space())
-    }
-    this.entities.splice(this.entities.indexOf(a), 1, b)
+    this.entities.splice(aIndex, 1, bEntity)
 
-    a.stop()
-    b.start()
-
-    this.generation++
+    bEntity.position = a.position
+    a.position = [-1, -1]
+    this.ctors.get(a.constructor as { new (): Entity })?.push(a)
+    this.lastActed.delete(a)
   }
 
-  public map<T>(cb: (entity: Entity, x: number, y: number) => T): T[] {
-    return this.entities.map((entity, index) => cb(entity, index % this.scale, Math.floor(index / this.scale)))
+  public newEntity<T extends Entity>(ctor?: { new (): T }): T {
+    const ctorEntities = ctor ? this.ctors.get(ctor)! : this.ctors.get(pickRandom(Array.from(this.ctors.keys())))!
+    const [entity] = ctorEntities.splice(Math.floor(Math.random() * ctorEntities.length), 1)
+    return entity as T
+  }
+
+  public map<T>(cb: (entity: Entity) => T): T[] {
+    let index = 0;
+    let ret: T[] = []
+    this.entitiesSet.forEach((entity) =>
+      ret.push(cb(entity))
+    )
+
+    return ret;
+  }
+
+  @isEffect<Game>(({ entities }) => [entities])
+  private doActions() {
+    let lastTime = performance.now()
+
+    const interval = setInterval(() => {
+      window.requestAnimationFrame(() => {
+        const time = performance.now()
+        const diff = time - lastTime
+
+        lastTime = time
+
+        this.entities.forEach((entity) => {
+          const lastActed = this.lastActed.get(entity)
+
+          if (lastActed !== undefined && lastActed + diff > entity.speed) {
+            entity.act()
+            this.lastActed.set(entity, 0)
+          } else {
+            this.lastActed.set(entity, lastActed === undefined ? 0 : lastActed + diff)
+          }
+        })
+      })
+    }, 100)
+
+    return () => clearInterval(interval)
   }
 }

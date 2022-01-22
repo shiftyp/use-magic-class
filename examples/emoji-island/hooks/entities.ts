@@ -1,4 +1,4 @@
-import { isContext, isEffect, isMemo } from 'use-magic-class'
+import { isContext, isEffect, isMemo, isState } from 'use-magic-class'
 import { Game } from './game'
 import { GameContext } from './contexts'
 
@@ -19,28 +19,21 @@ export enum EntityName {
 export abstract class Entity {
   static weight: number
 
+  public abstract scale: number
   public abstract entityName: EntityName
-  protected abstract speed: number
+  public abstract speed: number
   public abstract energy: number
   public abstract animate: boolean
+  public abstract id: string
   protected abstract emojis: string[]
 
-  protected abstract act: () => void
+  public abstract act: () => void
+  public abstract interact: () => void
 
-  private interval: number | null = null
+  @isState
+  public position = [0, 0]
 
-  @isEffect([])
-  public start() {
-    if (this.speed < Infinity) {
-      this.interval = setInterval(this.act, this.speed)
-    }
-
-    return () => this.stop()
-  }
-
-  public stop() {
-    this.interval ?? clearInterval(this.interval)
-  }
+  protected stopped = false
 
   @isContext(GameContext)
   private _game: Game | null = null
@@ -65,32 +58,39 @@ export abstract class Entity {
 export class Space extends Entity {
   static weight = 100
 
+  public scale = 1
   public entityName = EntityName.space
   public id = `${Math.random()}`
   public energy = 0
   public animate = false
-  protected speed = Infinity
+  public speed = Infinity
+  public emojis = [' ']
 
-  protected emojis = [' ']
+  public act = () => {}
 
-  protected act = () => {
-    console.log(this.id)
+  public interact = () => {
+    this.game?.replace(this, Box)
   }
 }
 
 export class Mountain extends Entity {
   static weight = 10
 
+  public scale = 1
   public entityName = EntityName.mountain
   public id = `${Math.random()}`
   public energy = 0
   public animate = false
-  protected speed = 50000
+  public speed= 50000
 
-  protected act = () => {
-    if (Math.random() < .5) {
-      this.game?.replace(this, new Volcano())
+  public act = () => {
+    if (Math.random() < 0.5) {
+      this.game?.replace(this, Volcano)
     }
+  }
+
+  public interact = () => {
+    this.game?.replace(this, Volcano)
   }
 
   protected emojis = ['⛰️', '🏔️']
@@ -99,15 +99,31 @@ export class Mountain extends Entity {
 export class Volcano extends Entity {
   static weight = 0
 
+  public scale = 1
   public entityName = EntityName.volcano
   public id = `${Math.random()}`
   public energy = 0
   public animate = false
-  protected speed = 1000
+  public speed= 2000
 
-  protected act = () => {
+  public act = () => {
     const { game } = this
-    game !== null && game.replace(game.peekRandom(this), new Fire())
+    if (game !== null) {
+      const dice = Math.random()
+
+      if (dice < 0.25) {
+        game.replace(this, Mountain)
+      } else {
+        const target = game.peekRandom(this, Space, Tree, Herbivore, Carnivore)
+        if (target) {
+          game.replace(target, Fire)
+        }
+      }
+    }
+  }
+
+  public interact = () => {
+    this.game?.replace(this, Mountain)
   }
 
   protected emojis = ['🌋']
@@ -116,16 +132,27 @@ export class Volcano extends Entity {
 export class Tree extends Entity {
   static weight = 20
 
+  public scale = 0.75
   public entityName = EntityName.tree
   public id = `${Math.random()}`
   public energy = 0
   public animate = true
 
-  protected speed = 10000
+  public speed= 10000
 
-  protected act = () => {
+  public act = () => {
     const { game } = this
-    game !== null && game.replace(game.peekRandom(this, Space), new Fruit())
+    if (game !== null) {
+      const target = game.peekRandom(this, Space)
+
+      if (target) {
+        game.replace(target, Fruit)
+      }
+    }
+  }
+
+  public interact = () => {
+    this.game?.replace(this, Fire)
   }
 
   protected emojis = ['🌲', '🌳', '🌴']
@@ -134,32 +161,38 @@ export class Tree extends Entity {
 export class Fruit extends Entity {
   static weight = 0
 
+  public scale = 0.2
   public entityName = EntityName.fruit
   public id = `${Math.random()}`
   public energy = 0
   public animate = true
 
-  protected speed = 5000
+  public speed= 8000
 
-  protected act = () => {
+  public act = () => {
     const { game } = this
-    game !== null && game.replace(this, new Tree())
+    game !== null && game.replace(this, Tree)
+  }
+
+  public interact = () => {
+    this.game?.replace(this, Space)
   }
 
   protected emojis = ['🍏', '🍎', '🍐', '🍊', '🍋', '🍑', '🥭']
 }
 
 export class Herbivore extends Entity {
-  static weight = 10
+  static weight = 20
 
+  public scale = 0.5
   public entityName = EntityName.herbivore
   public id = `${Math.random()}`
   public energy = 20
   public animate = true
 
-  protected speed = 5000
+  public speed= 3000
 
-  protected act = () => {
+  public act = () => {
     const { game } = this
     if (game) {
       const dice = Math.random()
@@ -167,38 +200,53 @@ export class Herbivore extends Entity {
 
       if (fruit) {
         game.replace(fruit, this)
-        this.energy++
+        this.energy += 5
         return
+      } else {
+        this.energy--
       }
 
       if (this.energy === 0) {
-        game.replace(this, new Bones())
+        game.replace(this, Bones)
         return
       }
 
-      if (dice < 0.5) {
-        const space = game.peekRandom(this, Space)
+      const space = game.peekRandom(this, Space)
 
-        if (space) {
+      if (space) {
+        if (this.energy > 50) {
+          game.replace(space, Herbivore)
+          this.energy -= 30
+        } else {
+          if (this.energy > 40) {
+            game.replace(this, Poop)
+          }
+          
           game.replace(space, this)
         }
       }
     }
   }
 
+  public interact = () => {
+    this.game?.replace(this, Bones)
+  }
+
   protected emojis = ['🐑', '🐏', '🦌', '🐂', '🐃', '🦙']
 }
 
 export class Carnivore extends Entity {
-  public weight = 5
+  static weight = 3
+
+  public scale = 0.5
   public entityName = EntityName.carnivore
   public id = `${Math.random()}`
   public energy = 20
   public animate = true
 
-  protected speed = 2000
+  public speed= 6000
 
-  protected act = () => {
+  public act = () => {
     const { game } = this
     if (game) {
       const dice = Math.random()
@@ -208,10 +256,12 @@ export class Carnivore extends Entity {
         game.replace(food, this)
         this.energy++
         return
+      } else {
+        this.energy--
       }
 
       if (this.energy === 0) {
-        game.replace(this, new Bones())
+        game.replace(this, Bones)
         return
       }
 
@@ -225,37 +275,45 @@ export class Carnivore extends Entity {
     }
   }
 
+  public interact = () => {
+    this.game?.replace(this, Bones)
+  }
+
   protected emojis = ['🐅', '🐆']
 }
 
 export class Fire extends Entity {
   static weight = 0
 
+  public scale = 0.7
   public entityName = EntityName.fire
   public id = `${Math.random()}`
-  public energy = 5
+  public energy = 3
   public animate = true
 
-  protected speed = 1000
+  public speed = 1000
 
-  protected act = () => {
+  public act = () => {
     const { game } = this
     if (game) {
       const dice = Math.random()
       const fuel = game.peekRandom(this, Tree)
 
-      if (fuel && dice < 0.5) {
-        game.replace(fuel, new Fire())
-        return
+      if (fuel && dice < 0.25) {
+        game.replace(fuel, Fire)
       }
 
       this.energy--
 
-      if (this.energy === 0) {
-        game.replace(this, new Space())
+      if (this.energy <= 0) {
+        game.replace(this, Space)
         return
       }
     }
+  }
+
+  public interact = () => {
+    this.game?.replace(this, Space)
   }
 
   protected emojis = ['🔥']
@@ -264,15 +322,20 @@ export class Fire extends Entity {
 export class Bones extends Entity {
   static weight = 0
 
+  public scale = 0.25
   public entityName = EntityName.bones
   public id = `${Math.random()}`
   public energy = 0
   public animate = true
 
-  protected speed = 5000
+  public speed= 5000
 
-  protected act = () => {
-    this.game?.replace(this, new Space())
+  public act = () => {
+    this.game?.replace(this, Space)
+  }
+
+  public interact = () => {
+    this.game?.replace(this, Space)
   }
 
   protected emojis = ['🦴', '💀']
@@ -281,15 +344,20 @@ export class Bones extends Entity {
 export class Box extends Entity {
   static weight = 0
 
+  public scale = 0.25
   public entityName = EntityName.box
   public id = `${Math.random()}`
   public energy = 0
   public animate = true
 
-  protected speed = 5000
+  public speed= 5000
 
-  protected act = () => {
-    this.game?.replace(this, new Space())
+  public act = () => {
+    this.game?.replace(this, this.game.newEntity())
+  }
+
+  public interact = () => {
+    this.game?.replace(this, Space)
   }
 
   protected emojis = ['📦']
@@ -298,14 +366,18 @@ export class Box extends Entity {
 export class Poop extends Entity {
   static weight = 0
 
+  public scale = 0.2
   public entityName = EntityName.poop
   public id = `${Math.random()}`
   public energy = 0
   public animate = true
-  protected speed = 5000
+  public speed= 5000
 
-  protected act = () => {
-    this.game?.replace(this, new Space())
+  public act = () => {
+    this.game?.replace(this, Tree)
+  }
+  public interact = () => {
+    this.game?.replace(this, Space)
   }
 
   protected emojis = ['💩']

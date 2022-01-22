@@ -1,24 +1,26 @@
 {
-    "name": "emoji-island-example",
-    "version": "1.0.0",
-    "main": "index.html",
-    "scripts": {
-      "start": "vite"
-    },
-    "dependencies": {
-      "faker": "5.5.3",
-      "react": "17.0.2",
-      "react-dom": "17.0.2",
-      "react-transition-group": "4.4.2",
-      "react-virtualized-auto-sizer": "1.0.6",
-      "use-magic-class": "*"
-    },
-    "devDependencies": {
-      "@types/faker": "5.5.9",
-      "@types/react": "17.0.38",
-      "@types/react-dom": "17.0.11",
-      "@types/react-virtualized-auto-sizer": "1.0.1",
-      "vite": "2.7.12",
-      "typescript": "4.5.4"
-    }
+  "name": "emoji-island-example",
+  "version": "1.0.0",
+  "main": "index.html",
+  "scripts": {
+    "start": "vite"
+  },
+  "dependencies": {
+    "@types/styled-components": "^5.1.20",
+    "faker": "5.5.3",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "react-transition-group": "4.4.2",
+    "react-virtualized-auto-sizer": "1.0.6",
+    "styled-components": "^5.3.3",
+    "use-magic-class": "0.1.4"
+  },
+  "devDependencies": {
+    "@types/faker": "5.5.9",
+    "@types/react": "17.0.38",
+    "@types/react-dom": "17.0.11",
+    "@types/react-virtualized-auto-sizer": "1.0.1",
+    "typescript": "4.5.4",
+    "vite": "2.7.12"
   }
+}

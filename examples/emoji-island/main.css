@@ -202,7 +202,7 @@ html {
     align-items: center;
     border: none;
     border-radius: 20%;
-    background-color: rgba(255, 255, 255, 0.212);
+    background-color: rgba(255, 255, 255, 0.1);
     box-sizing: border-box;
   }
   
@@ -218,6 +218,10 @@ html {
     box-sizing: border-box;
     border: none;
     font-smooth: never;
+  }
+
+  .emoji {
+    transition: 0.5s linear all;
   }
   
   .square-exit .square {
