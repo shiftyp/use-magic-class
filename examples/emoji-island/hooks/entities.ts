@@ -76,7 +76,7 @@ export class Space extends Entity {
 export class Mountain extends Entity {
   static weight = 10
 
-  public scale = 1
+  public scale = 0.9
   public entityName = EntityName.mountain
   public id = `${Math.random()}`
   public energy = 0
@@ -93,13 +93,13 @@ export class Mountain extends Entity {
     this.game?.replace(this, Volcano)
   }
 
-  protected emojis = ['⛰️', '🏔️']
+  protected emojis = ['1F3D4', '26F0', '1F5FB']
 }
 
 export class Volcano extends Entity {
   static weight = 0
 
-  public scale = 1
+  public scale = 0.9
   public entityName = EntityName.volcano
   public id = `${Math.random()}`
   public energy = 0
@@ -126,7 +126,7 @@ export class Volcano extends Entity {
     this.game?.replace(this, Mountain)
   }
 
-  protected emojis = ['🌋']
+  protected emojis = ['1F30B']
 }
 
 export class Tree extends Entity {
@@ -155,7 +155,7 @@ export class Tree extends Entity {
     this.game?.replace(this, Fire)
   }
 
-  protected emojis = ['🌲', '🌳', '🌴']
+  protected emojis = ['1F332', '1F334', '1F333']
 }
 
 export class Fruit extends Entity {
@@ -178,7 +178,7 @@ export class Fruit extends Entity {
     this.game?.replace(this, Space)
   }
 
-  protected emojis = ['🍏', '🍎', '🍐', '🍊', '🍋', '🍑', '🥭']
+  protected emojis = ['1F34A', '1F34B', '1F34C', '1F34D', '1F34E', '1F34F']
 }
 
 export class Herbivore extends Entity {
@@ -232,7 +232,7 @@ export class Herbivore extends Entity {
     this.game?.replace(this, Bones)
   }
 
-  protected emojis = ['🐑', '🐏', '🦌', '🐂', '🐃', '🦙']
+  protected emojis = ['1F40F', '1F411', '1F98C', '1F402', '1F403', '1F999', '1F992']
 }
 
 export class Carnivore extends Entity {
@@ -279,7 +279,7 @@ export class Carnivore extends Entity {
     this.game?.replace(this, Bones)
   }
 
-  protected emojis = ['🐅', '🐆']
+  protected emojis = ['1F405', '1F406']
 }
 
 export class Fire extends Entity {
@@ -316,7 +316,7 @@ export class Fire extends Entity {
     this.game?.replace(this, Space)
   }
 
-  protected emojis = ['🔥']
+  protected emojis = ['1F525']
 }
 
 export class Bones extends Entity {
@@ -338,7 +338,7 @@ export class Bones extends Entity {
     this.game?.replace(this, Space)
   }
 
-  protected emojis = ['🦴', '💀']
+  protected emojis = ['1F9B4', '1F480']
 }
 
 export class Box extends Entity {
@@ -360,7 +360,7 @@ export class Box extends Entity {
     this.game?.replace(this, Space)
   }
 
-  protected emojis = ['📦']
+  protected emojis = ['1f4e6']
 }
 
 export class Poop extends Entity {
@@ -380,7 +380,7 @@ export class Poop extends Entity {
     this.game?.replace(this, Space)
   }
 
-  protected emojis = ['💩']
+  protected emojis = ['1F4A9']
 }
 
 export const Entities: {

@@ -1,3 +1,8 @@
+@font-face {
+  font-family: openmoji;
+  src: url(OpenMoji-Color.ttf);
+}
+
 html {
     background: rgb(46, 160, 212);
   }
@@ -136,15 +141,11 @@ html {
   
   .grid-outer {
     box-sizing: content-box;
-    transform-origin: 0% 0%;
     overflow: visible;
   }
   
   .grid-outer {
     position: absolute;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     box-sizing: content-box;
     
     
@@ -155,9 +156,6 @@ html {
     box-sizing: content-box;
     user-select: none;
     animation: stepIntoAWorld 2s;
-    
-    width: 80px;
-    height: 70px;
   }
   
   .island-outer {
@@ -168,6 +166,11 @@ html {
 
   .island {
     overflow: visible;
+    
+  }
+
+  svg {
+    font-family: openmoji;
   }
   
   .island path {
@@ -195,8 +198,6 @@ html {
     display: flex;
     position: absolute;
     padding: 0;
-    height: 12px;
-    width: 12px;
     font-size: 7px;
     text-align: center;
     align-items: center;

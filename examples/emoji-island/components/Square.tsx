@@ -4,8 +4,8 @@ import { Entity } from '../hooks/entities'
 
 export type SquareProps = {
   title: string
-  background?: string
-  scale?: number
+  bg?: string
+  scale: number
   position: [number, number]
   transition?: string
   onClick?: () => void
@@ -41,7 +41,7 @@ export class SquareBoundary extends React.Component<
 
 export const Square: React.FunctionComponent<SquareProps> = ({
   title,
-  background,
+  bg = 'none',
   scale,
   children,
   position,
@@ -49,17 +49,20 @@ export const Square: React.FunctionComponent<SquareProps> = ({
   layer = 1,
 }) => {
   return (
-    <button
-      key="button"
+    <rect
       className="square-button"
-      onClick={onClick}
       style={{
-        border: `0.2rem solid ${background}`,
-        background: `radial-gradient(${background}, rgba(0, 0, 0, 0))`,
+        stroke: `0.2rem solid ${bg}`,
+        fill: bg,
+        height: 12 * scale,
+        width: 12 * scale,
       }}
-      title={title}
+      x={position[0] * 12 * scale}
+      y={position[1] * 12 * scale}
+      rx={3 * scale}
+      ry={3 * scale}
     >
       {' '}
-    </button>
+    </rect>
   )
 }

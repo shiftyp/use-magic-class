@@ -3,35 +3,29 @@ import React from 'react'
 import { Entity } from '../hooks/entities'
 import { useMagicClass } from '../../../magic/react'
 
-export const Emoji = ({ entity }: { entity: Entity }) => {
+export const Emoji = ({ entity, scale }: { entity: Entity; scale: number }) => {
   useMagicClass(entity)
 
   return entity.position.find((coord) => coord < 0) ? null : (
-    <button
-      className="square-button"
-      onClick={() => entity.interact()}
+    <g
       style={{
-        position: 'absolute',
-        top: `${entity.position[1] * 12}px`,
-        left: `${entity.position[0] * 12}px`,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'none',
+        transform: `translate(${entity.position[0] * 12 * scale}px,${
+          (entity.position[1] * 12) * scale
+        }px`,
       }}
     >
-      <span
+      <use
         key="emoji"
         className="emoji"
         role="img"
+        height={12 * scale}
+        width={12 * scale}
+        onClick={() => entity.interact()}
+        xlinkHref={`#${entity.emoji}`}
         style={{
-          textAlign: 'center',
-          display: 'block',
-          fontSize: `${entity.scale}rem`,
+          transform: `scale(${0.1666666 * entity.scale})`,
         }}
-      >
-        {entity.emoji}
-      </span>
-    </button>
+      />
+    </g>
   )
 }

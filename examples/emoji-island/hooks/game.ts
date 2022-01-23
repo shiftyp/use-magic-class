@@ -20,7 +20,10 @@ export class Game {
       const ctorEntities: Entity[] = []
 
       for (let i = 0; i < this.scale ** 2; i++) {
-        ctorEntities[ctorEntities.push(new ctor()) - 1].position = [-1, -1]
+        const entity = new ctor()
+        entity.position = [-1, -1]
+
+        ctorEntities.push(entity)
       }
 
       this.ctors.set(ctor, ctorEntities)
