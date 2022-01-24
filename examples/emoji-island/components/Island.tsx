@@ -260,12 +260,9 @@ export const Island = () => {
             </svg>
             {overlayTranslation && <canvas
               style={{
-                position: 'absolute',
                 transform: 'translateZ(3px)',
                 pointerEvents: 'none',
                 clipPath: 'url(#mag)',
-                top: 0,
-                left: 0,
               }}
               ref={setCanvas}
               height={size}

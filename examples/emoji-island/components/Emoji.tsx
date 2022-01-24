@@ -9,8 +9,8 @@ export const Emoji = ({ entity, scale }: { entity: Entity; scale: number }) => {
   return entity.position.find((coord) => coord < 0) ? null : (
     <g
       style={{
-        transform: `translate(${entity.position[0] * 12 * scale}px,${
-          (entity.position[1] * 12) * scale
+        transform: `translate(${(entity.position[0] * 12 + 1 / entity.scale ** 1.5) * scale}px,${
+          (entity.position[1] * 12 + 1 / entity.scale ** 1.5) * scale
         }px`,
       }}
     >

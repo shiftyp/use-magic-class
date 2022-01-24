@@ -76,7 +76,7 @@ export class Space extends Entity {
 export class Mountain extends Entity {
   static weight = 10
 
-  public scale = 0.9
+  public scale = 1
   public entityName = EntityName.mountain
   public id = `${Math.random()}`
   public energy = 0
@@ -99,7 +99,7 @@ export class Mountain extends Entity {
 export class Volcano extends Entity {
   static weight = 0
 
-  public scale = 0.9
+  public scale = 1
   public entityName = EntityName.volcano
   public id = `${Math.random()}`
   public energy = 0
@@ -161,7 +161,7 @@ export class Tree extends Entity {
 export class Fruit extends Entity {
   static weight = 0
 
-  public scale = 0.2
+  public scale = 0.4
   public entityName = EntityName.fruit
   public id = `${Math.random()}`
   public energy = 0
@@ -360,7 +360,7 @@ export class Box extends Entity {
     this.game?.replace(this, Space)
   }
 
-  protected emojis = ['1f4e6']
+  protected emojis = ['1F4E6']
 }
 
 export class Poop extends Entity {
