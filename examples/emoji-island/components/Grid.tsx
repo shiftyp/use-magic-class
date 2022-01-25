@@ -24,9 +24,7 @@ export const Grid = ({
   mouseMove?: (e: React.MouseEvent<SVGGElement>) => void
   mouseLeave?: (e: React.MouseEvent<SVGGElement>) => void
   translation?: [x: number, y: number]
-}) => {
-  useMagicClass(game)
-  
+}) => {  
   return (
     <GameContext.Provider value={game}>
       <g

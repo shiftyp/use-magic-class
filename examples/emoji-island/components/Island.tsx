@@ -313,7 +313,7 @@ export const Island = () => {
               >
                 <div
                   style={{
-                    transform: `translateZ(${5 * (game.scale / 20)}px)`,
+                    transform: `translateZ(${4 * (game.scale / 20) + 0.5}px)`,
                   }}
                 >
                   <svg

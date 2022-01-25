@@ -81,7 +81,7 @@ export class Mountain extends Entity {
   public id = `${Math.random()}`
   public energy = 0
   public animate = false
-  public speed= 50000
+  public speed = 50000
 
   public act = () => {
     if (Math.random() < 0.5) {
@@ -104,7 +104,7 @@ export class Volcano extends Entity {
   public id = `${Math.random()}`
   public energy = 0
   public animate = false
-  public speed= 2000
+  public speed = 2000
 
   public act = () => {
     const { game } = this
@@ -138,15 +138,20 @@ export class Tree extends Entity {
   public energy = 0
   public animate = true
 
-  public speed= 10000
+  public speed = 8000
 
   public act = () => {
     const { game } = this
     if (game !== null) {
-      const target = game.peekRandom(this, Space)
+      for (let i = 0; i < 4; i++) {
+        const dice = Math.random()
+        if (dice < 0.5) {
+          const target = game.peekRandom(this, Space)
 
-      if (target) {
-        game.replace(target, Fruit)
+          if (target) {
+            game.replace(target, Fruit)
+          }
+        }
       }
     }
   }
@@ -167,7 +172,7 @@ export class Fruit extends Entity {
   public energy = 0
   public animate = true
 
-  public speed= 8000
+  public speed = 8000
 
   public act = () => {
     const { game } = this
@@ -190,7 +195,7 @@ export class Herbivore extends Entity {
   public energy = 20
   public animate = true
 
-  public speed= 3000
+  public speed = 1000
 
   public act = () => {
     const { game } = this
@@ -220,8 +225,9 @@ export class Herbivore extends Entity {
         } else {
           if (this.energy > 40) {
             game.replace(this, Poop)
+            this.energy -= 10
           }
-          
+
           game.replace(space, this)
         }
       }
@@ -232,7 +238,15 @@ export class Herbivore extends Entity {
     this.game?.replace(this, Bones)
   }
 
-  protected emojis = ['1F40F', '1F411', '1F98C', '1F402', '1F403', '1F999', '1F992']
+  protected emojis = [
+    '1F40F',
+    '1F411',
+    '1F98C',
+    '1F402',
+    '1F403',
+    '1F999',
+    '1F992',
+  ]
 }
 
 export class Carnivore extends Entity {
@@ -244,7 +258,7 @@ export class Carnivore extends Entity {
   public energy = 20
   public animate = true
 
-  public speed= 6000
+  public speed = 6000
 
   public act = () => {
     const { game } = this
@@ -328,7 +342,7 @@ export class Bones extends Entity {
   public energy = 0
   public animate = true
 
-  public speed= 5000
+  public speed = 5000
 
   public act = () => {
     this.game?.replace(this, Space)
@@ -350,7 +364,7 @@ export class Box extends Entity {
   public energy = 0
   public animate = true
 
-  public speed= 5000
+  public speed = 5000
 
   public act = () => {
     this.game?.replace(this, this.game.newEntity())
@@ -371,7 +385,7 @@ export class Poop extends Entity {
   public id = `${Math.random()}`
   public energy = 0
   public animate = true
-  public speed= 5000
+  public speed = 5000
 
   public act = () => {
     this.game?.replace(this, Tree)
