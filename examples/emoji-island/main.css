@@ -3,10 +3,6 @@
   src: url(OpenMoji-Color.ttf);
 }
 
-html {
-  background: rgb(46, 160, 212);
-}
-
 html,
 body {
   margin: 0;

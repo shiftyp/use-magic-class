@@ -83,6 +83,113 @@ export const Island = () => {
               }}
             >
               <svg
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  zIndex: -1,
+                }}
+                viewBox={`0 0 ${100} ${100}`}
+                height={height}
+                width={width}
+              >
+                <defs>
+                <linearGradient id="whitecaps" x2="1" spreadMethod="reflect" gradientUnits="userSpaceOnUse">
+                  <stop offset="90%" stopOpacity={0}/>
+                  <stop offset="90%" stop-color="rgb(113, 188, 223)"/>
+                  <animate attributeName='x1' values="1;1000;1" dur="50s" repeatCount="indefinite" />
+                  <animate attributeName='x2' values="4;1004;4" dur="50s" repeatCount="indefinite" />
+                  </linearGradient>
+                  <filter id="whitecaps-turbulence">
+                  <feTurbulence
+                      type="turbulence"
+                      baseFrequency={turbulenceFreq}
+                      numOctaves="3"
+
+                      width={400}
+                      height={400}
+                    >
+                      
+                    </feTurbulence>
+                    <feDisplacementMap
+                      in2="turbulence"
+                      in="SourceGraphic"
+                      scale="30"
+                      xChannelSelector="R"
+                      yChannelSelector="G"
+                    />
+                  </filter>
+                <radialGradient id="ocean">
+                    <stop offset="0%" stopColor="rgb(182, 220, 238)" />
+                    <stop offset="80%" stopColor="rgb(46, 160, 212)" />
+                    <stop offset="100%" stopColor="rgb(46, 160, 212)" />
+                  </radialGradient>
+                  <filter id="waves">
+                    <feTurbulence
+                      type="fractalNoise"
+                      baseFrequency="100"
+                      result="noise"
+                    />
+                    <feColorMatrix
+                      in="noise"
+                      type="saturate"
+                      values="0"
+                      result="saturation"
+                    />
+                    <feTurbulence
+                      type="turbulence"
+                      baseFrequency={0.1}
+                      numOctaves="12"
+                      result="turbulence"
+
+                      width={400}
+                      height={400}
+                    >
+                      
+                    </feTurbulence>
+                    <feColorMatrix
+                      in="turbulence"
+                      type="luminanceToAlpha"
+                      values="0"
+                      result="luminance"
+                    />
+                    <feBlend
+                      in="SourceGraphic"
+                      in2="saturation"
+                      mode="multiply"
+                      result="sand"
+                    />
+                    <feBlend
+                      in="SourceGraphic"
+                      in2="luminance"
+                      mode="multiply"
+                      result="dunes"
+                    />
+                    <feBlend
+                      in="dunes"
+                      in2="sand"
+                      mode="overlay"
+                    />
+                  </filter>
+                </defs>
+                <rect
+                filter='url(#waves)'
+                  fill="url(#ocean)"
+                  x={-50}
+                  y={-50}
+                  height={200}
+                  width={200}
+                ></rect>
+                 <rect
+                filter='url(#whitecaps-turbulence)'
+                  fill="url(#whitecaps)"
+                  x={-50}
+                  y={-50}
+                  height={200}
+                  width={200}
+                ></rect>
+              </svg>
+              <svg
                 ref={setSvg}
                 id="island"
                 className="island"
@@ -90,7 +197,6 @@ export const Island = () => {
                 viewBox="0 0 300 300"
                 height={size}
                 width={size}
-                z={0}
               >
                 <defs>
                   <clipPath id="mag" clipPathUnits="userSpaceOnUse">
