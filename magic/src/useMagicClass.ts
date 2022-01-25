@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import 'reflect-metadata'
 
 const stateMetadataKey = Symbol()
@@ -99,6 +100,7 @@ export const createUseMagicClass = ({
   useState,
   useContext,
   useMemo,
+  useReducer,
 }: {
   useEffect: (
     cb: () => void | (() => void),
@@ -111,6 +113,7 @@ export const createUseMagicClass = ({
   useState: <T>(initial: T) => [T, (value: T) => void]
   useContext: <T>(context: Context<T>) => T
   useMemo: <T>(cb: () => T, dependencies: any[]) => T
+  useReducer: <T = void, U = void>(cb: (u: U, t: T) => U, init: U) => [U, (t: T) => void]
 }) => {
   const useMagicClass = <Obj extends Object>(Constructor: Constructor<Obj>) => {
     const ignoreChanges = typeof Constructor === 'function'
@@ -118,11 +121,17 @@ export const createUseMagicClass = ({
     let inEffectPhase = false
     let inMemoPhase = false
 
+    const [last, update] = useState(0)
+
+    const doUpdate = useRef<() => void>(() => {})
+
+    doUpdate.current = () => {
+      doUpdate.current = () => {}
+      update(last % Number.MAX_SAFE_INTEGER + 1)
+    }
     const [
       obj,
       magic,
-      states,
-      stateCollections,
       effects,
       layoutEffects,
       memos,
@@ -173,11 +182,7 @@ export const createUseMagicClass = ({
 
       const magic: [(obj: any) => void, string][] = []
       const states: [
-        (setState: (value: any) => void) => void,
-        string
-      ][] = []
-      const stateCollections: [
-        (setState: (value: any) => void) => void,
+        (setState: () => void) => void,
         string
       ][] = []
       const effects: [any[] | (() => any[] | void), string][] = []
@@ -219,7 +224,7 @@ export const createUseMagicClass = ({
 
         const memoDependency = getIsMemo(obj, key)
 
-        if (memoDependency) {
+        if (memoDependency ?? false) {
           // @ts-ignore
           const get = descriptor.get.bind(obj)
 
@@ -257,38 +262,35 @@ export const createUseMagicClass = ({
             key,
           ])
         } else if (getIsStateCollection(obj, key)) {
-          stateCollections.push([(setState) => {
-            let collection = obj[key as keyof Obj] as Object
-            const doUpdate = () => setState(Object.entries(collection))
+          let collection = obj[key as keyof Obj] as Object
+          // @ts-ignore
+          const createProxy = (value) => store[key as keyof Obj] = new Proxy(value, {
+            get: Reflect.get,
+            set: (...args) => {
+              const ret = Reflect.set(...args)
+              doUpdate.current()
+              return ret
+            },
+            deleteProperty: (...args) => {
+              const ret = Reflect.deleteProperty(...args)
+              doUpdate.current()
+              return ret
+            },
             // @ts-ignore
-            const createProxy = (value) => store[key as keyof Obj] = new Proxy(value, {
-              get: Reflect.get,
-              set: (...args) => {
-                const ret = Reflect.set(...args)
-                doUpdate()
-                return ret
-              },
-              deleteProperty: (...args) => {
-                const ret = Reflect.deleteProperty(...args)
-                doUpdate()
-                return ret
-              },
-              // @ts-ignore
-              enumerate: Reflect.enumerate,
-              ownKeys: Reflect.ownKeys,
-            }) as Obj[keyof Obj]
+            enumerate: Reflect.enumerate,
+            ownKeys: Reflect.ownKeys,
+          }) as Obj[keyof Obj]
 
-            createProxy(collection)
+          createProxy(collection)
 
-            Object.defineProperty(obj, key, {
-              get: () => store[key as keyof Obj],
-              set: (value: any) => {
-                collection = value
-                createProxy(value)
-                doUpdate()
-              }
-            })
-          }, key])
+          Object.defineProperty(obj, key, {
+            get: () => store[key as keyof Obj],
+            set: (value: any) => {
+              collection = value
+              createProxy(value)
+              doUpdate()
+            }
+          })
         } else if (getIsState(obj, key)) {
           store[key as keyof Obj] = obj[key as keyof Obj]
 
@@ -306,25 +308,18 @@ export const createUseMagicClass = ({
             },
           })
 
-          states.push([
-            (setState) => {
-              Object.defineProperty(magicState, key, {
-                // @ts-ignore
-                set: (val) => {
-                  setState(val)
-                },
-              })
+          Object.defineProperty(magicState, key, {
+            // @ts-ignore
+            set: (val) => {
+              doUpdate.current()
             },
-            key,
-          ])
+          })
         }
       })
 
       return [
         obj,
         magic,
-        states,
-        stateCollections,
         effects,
         layoutEffects,
         memos,
@@ -347,24 +342,6 @@ export const createUseMagicClass = ({
       const magicObj = useMagicClass(obj[key])
       // @ts-ignore
       useMemo(() => init(magicObj), [obj[key]])
-      /* eslint-enable */
-    })
-
-    states.forEach(([init, key]) => {
-      /* eslint-disable */
-      // @ts-ignore
-      const [_, setState] = useState(() => obj[key])
-      useEffect(() => {
-        setState(() => obj[key as keyof Obj])
-      }, [memoDeps])
-      useMemo(() => init(setState), [...memoDeps])
-      /* eslint-enable */
-    })
-
-    stateCollections.forEach(([init, key]) => {
-      /* eslint-disable */
-      const [_, setState] = useState(null)
-      useMemo(() => init(setState), [...memoDeps])
       /* eslint-enable */
     })
 

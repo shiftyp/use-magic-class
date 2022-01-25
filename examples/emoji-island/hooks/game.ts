@@ -1,4 +1,4 @@
-import { isEffect, isMemo, isState, isStateCollection } from 'use-magic-class'
+import { isEffect, isMemo, isState } from 'use-magic-class'
 import { Entities, Entity, EntityName, Space } from './entities'
 
 const pickRandom = <T>(arr: T[]): T => {
@@ -8,11 +8,18 @@ export class Game {
   @isState
   public scale = 7
 
-  @isEffect<Game>(({ scale }) => [scale])
-  private makeEntities() {
+  public clearEntities() {
     this.ctors = new Map()
     this.entities = []
     this.entitiesSet = new Set()
+  }
+
+  @isEffect([])
+  public makeEntities() {
+    this.entitiesSet.clear()
+    this.ctors.clear()
+
+    const entities = []
 
     const choices: { new (): Entity }[] = []
 
@@ -41,8 +48,10 @@ export class Game {
     for (let i = 0; i < this.scale ** 2; i++) {
       const entity = this.newEntity(pickRandom(choices))
       entity.position = [i % this.scale, Math.floor(i / this.scale)]
-      this.entities.push(entity)
+      entities[i] = entity
     }
+
+    this.entities = entities
   }
 
   @isState
@@ -131,6 +140,10 @@ export class Game {
     )
 
     return ret;
+  }
+  
+  public interactAt(x: number, y: number) {
+    this.entities[y * this.scale + x].interact()
   }
 
   @isEffect<Game>(({ entities }) => [entities])

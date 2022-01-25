@@ -4,298 +4,294 @@
 }
 
 html {
-    background: rgb(46, 160, 212);
+  background: rgb(46, 160, 212);
+}
+
+html,
+body {
+  margin: 0;
+  overflow: visible;
+  font-size: 14px;
+  max-width: 100vw;
+}
+
+h1 {
+  font-size: 1.5rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+}
+
+h1,
+h2,
+h3,
+li,
+p {
+  margin: 0 0 0.5rem 0;
+  font-family: 'Courier New', Courier, monospace;
+  color: white;
+}
+
+h1 a,
+h2 a,
+h3 a,
+li a,
+p a {
+  margin: 0 0 0.5rem 0;
+  font-family: 'Courier New', Courier, monospace;
+  color: yellow;
+  font-weight: bold;
+}
+
+p,
+li {
+  font-size: 1.2rem;
+}
+
+#app {
+  height: 100vh;
+}
+
+@keyframes shake {
+  0% {
+    opacity: 0.75;
   }
-  
-  html,
-  body {
-    margin: 0;
-    overflow: visible;
-    font-size: 14px;
-    max-width: 100vw;
-  }
-  
-  h1 {
-    font-size: 1.5rem;
-  }
-  
-  h2 {
-    font-size: 1.5rem;
-  }
-  
-  h3 {
-    font-size: 1.5rem;
-  }
-  
-  h1,
-  h2,
-  h3,
-  li,
-  p {
-    margin: 0 0 0.5rem 0;
-    font-family: 'Courier New', Courier, monospace;
-    color: white;
-  }
-  
-  h1 a,
-  h2 a,
-  h3 a,
-  li a,
-  p a {
-    margin: 0 0 0.5rem 0;
-    font-family: 'Courier New', Courier, monospace;
-    color: yellow;
-    font-weight: bold;
-  }
-  
-  p,
-  li {
-    font-size: 1.2rem;
+  10%,
+  90% {
+    transform: rotate(-10deg);
   }
 
-  #app {
-      height: 100vh
-  }
-  
-  @keyframes shake {
-    0% {
-      opacity: 0.75;
-    }
-    10%,
-    90% {
-      transform: rotate(-10deg);
-    }
-  
-    20%,
-    80% {
-      transform: rotate(12deg);
-    }
-  
-    30%,
-    50%,
-    70% {
-      transform: rotate(-4deg);
-    }
-  
-    40%,
-    60% {
-      transform: rotate(10deg);
-    }
-    100% {
-      opacity: 0;
-    }
-  }
-  
-  @keyframes scaleIn {
-    0% {
-      opacity: 0;
-      transform: scale(0) translateY(100%) translatez(0);
-    }
-    100% {
-      transform: scale(1) translateY(0) translatez(0);
-      opacity: 1;
-    }
-  }
-  
-  @keyframes stepIntoAWorld {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-  
-  #app {
-    position: relative;
-  }
-  
-  .button,
-  .select {
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    font-size: 1em;
-    margin-right: 1rem;
-    background-color: rgb(216, 227, 233);
-  }
-  
-  .button:last-child,
-  .select:last-child {
-    margin-right: 0;
-  }
-  
-  .layout {
-    overflow: hidden;
-    max-height: 100vh;
-    height: 100vh;
-  }
-  
-  .header {
-    position: absolute;
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-    padding-left: 1rem;
-    border-bottom: 0.5rem solid transparent;
-    z-index: 3;
-  }
-  
-  .grid-outer {
-    box-sizing: content-box;
-    overflow: visible;
-  }
-  
-  .grid-outer {
-    position: absolute;
-    box-sizing: content-box;
-    
-    
-  }
-  
-  .grid {
-    position: relative;
-    box-sizing: content-box;
-    user-select: none;
-    animation: stepIntoAWorld 2s;
-  }
-  
-  .island-outer {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  20%,
+  80% {
+    transform: rotate(12deg);
   }
 
-  .island {
-    overflow: visible;
-    
+  30%,
+  50%,
+  70% {
+    transform: rotate(-4deg);
   }
 
-  svg {
-    font-family: openmoji;
+  40%,
+  60% {
+    transform: rotate(10deg);
   }
-  
-  .island path {
-    stroke: rgba(165, 221, 238, 0.473);
-  }
-
-  .island foreignObject {
-      overflow: visible;
-  }
-  
-  .grid-inner {
-    position: relative;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    box-sizing: content-box;
-    min-width: 100%;
-    min-height: 100%;
-    /*background-color: rgba(165, 128, 79, 0.459);*/
-    border-radius: 10px;
-    z-index: 1;
-  }
-  
-  .grid .square-button {
-    display: flex;
-    position: absolute;
-    padding: 0;
-    font-size: 7px;
-    text-align: center;
-    align-items: center;
-    border: none;
-    border-radius: 20%;
-    background-color: rgba(255, 255, 255, 0.1);
-    box-sizing: border-box;
-  }
-  
-  .grid .square {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-sizing: border-box;
-    border: none;
-    font-smooth: never;
-  }
-
-  .emoji {
-    transition: 0.5s linear all;
-  }
-  
-  .square-exit .square {
+  100% {
     opacity: 0;
   }
-  
-  .square-enter-active .square {
-    animation-name: scaleIn;
-    animation-duration: 0.5s;
+}
+
+@keyframes scaleIn {
+  0% {
+    opacity: 0;
+    transform: scale(0) translateY(100%) translatez(0);
   }
-  
-  .square-exit-active .square {
-    animation-name: shake;
-    animation-duration: 1s;
-    z-index: 2;
-    transform-origin: 50% 100%;
+  100% {
+    transform: scale(1) translateY(0) translatez(0);
+    opacity: 1;
   }
-  
-  .grid .square:hover,
-  .grid .square:focus {
-    filter: drop-shadow(0px 0px 3px #ccc);
-    cursor: pointer;
+}
+
+@keyframes stepIntoAWorld {
+  0% {
+    opacity: 0;
   }
-  
+  100% {
+    opacity: 1;
+  }
+}
+
+#app {
+  position: relative;
+}
+
+.button,
+.select {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 1em;
+  margin-right: 1rem;
+  background-color: rgb(216, 227, 233);
+}
+
+.button:last-child,
+.select:last-child {
+  margin-right: 0;
+}
+
+.layout {
+  overflow: hidden;
+  max-height: 100vh;
+  height: 100vh;
+}
+
+.header {
+  position: absolute;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  padding-left: 1rem;
+  border-bottom: 0.5rem solid transparent;
+  z-index: 3;
+}
+
+.grid-outer {
+  box-sizing: content-box;
+  overflow: visible;
+}
+
+.grid-outer {
+  position: absolute;
+  box-sizing: content-box;
+}
+
+.grid {
+  position: relative;
+  box-sizing: content-box;
+  user-select: none;
+  animation: stepIntoAWorld 2s;
+}
+
+.island-outer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.island {
+  overflow: visible;
+}
+
+svg {
+  font-family: openmoji;
+}
+
+.island .ground {
+  stroke: rgba(165, 221, 238, 0.473);
+}
+
+.island foreignObject {
+  overflow: visible;
+}
+
+.grid-inner {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  box-sizing: content-box;
+  min-width: 100%;
+  min-height: 100%;
+  /*background-color: rgba(165, 128, 79, 0.459);*/
+  border-radius: 10px;
+  z-index: 1;
+}
+
+.grid .square-button {
+  display: flex;
+  position: absolute;
+  padding: 0;
+  font-size: 7px;
+  text-align: center;
+  align-items: center;
+  border: none;
+  border-radius: 20%;
+  background-color: rgba(255, 255, 255, 0.1);
+  box-sizing: border-box;
+}
+
+.grid .square {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  border: none;
+  font-smooth: never;
+}
+
+.emoji {
+  transition: 0.5s linear all;
+}
+
+.square-exit .square {
+  opacity: 0;
+}
+
+.square-enter-active .square {
+  animation-name: scaleIn;
+  animation-duration: 0.5s;
+}
+
+.square-exit-active .square {
+  animation-name: shake;
+  animation-duration: 1s;
+  z-index: 2;
+  transform-origin: 50% 100%;
+}
+
+.grid .square:hover,
+.grid .square:focus {
+  filter: drop-shadow(0px 0px 3px #ccc);
+  cursor: pointer;
+}
+
+.log {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  background: rgba(0, 0, 0, 0.5);
+  width: 100vw;
+  min-height: 100vh;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 1rem;
+  box-sizing: border-box;
+  overflow: auto;
+  z-index: 3;
+}
+
+.log > * {
+  width: 100%;
+  max-width: 600px;
+}
+
+.log ul li,
+.log dl li {
+  list-style: none;
+}
+
+@media only screen and (max-width: 1000px) {
   .log {
-    position: absolute;
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    background: rgba(0, 0, 0, 0.5);
-    width: 100vw;
-    min-height: 100vh;
-    padding-left: 1rem;
-    padding-right: 1rem;
-    padding-top: 1rem;
-    box-sizing: border-box;
-    overflow: auto;
-    z-index: 3;
-  }
-  
-  .log > * {
     width: 100%;
-    max-width: 600px;
   }
-  
-  .log ul li,
-  .log dl li {
-    list-style: none;
+}
+
+@media only screen and (min-resolution: 200dpi) {
+  .button,
+  .select {
+    padding: 1.5rem;
   }
-  
-  @media only screen and (max-width: 1000px) {
-    .log {
-      width: 100%;
-    }
+  h1 {
+    font-size: 1rem;
   }
-  
-  @media only screen and (min-resolution: 200dpi) {
-    .button,
-    .select {
-      padding: 1.5rem;
-    }
-    h1 {
-      font-size: 1rem;
-    }
-    h2 {
-      font-size: 2rem;
-    }
-    h3 {
-      font-size: 2rem;
-    }
-    p,
-    li {
-      font-size: 1.5rem;
-    }
+  h2 {
+    font-size: 2rem;
   }
-  
+  h3 {
+    font-size: 2rem;
+  }
+  p,
+  li {
+    font-size: 1.5rem;
+  }
+}
