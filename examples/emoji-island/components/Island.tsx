@@ -88,29 +88,41 @@ export const Island = () => {
                   top: 0,
                   left: 0,
                   zIndex: -1,
+                  overflow: 'hidden',
                 }}
-                viewBox={`0 0 ${100} ${100}`}
+                viewBox={`0 0 ${width} ${height}`}
                 height={height}
                 width={width}
               >
                 <defs>
-                <linearGradient id="whitecaps" x2="1" spreadMethod="reflect" gradientUnits="userSpaceOnUse">
-                  <stop offset="90%" stopOpacity={0}/>
-                  <stop offset="90%" stop-color="rgb(113, 188, 223)"/>
-                  <animate attributeName='x1' values="1;1000;1" dur="50s" repeatCount="indefinite" />
-                  <animate attributeName='x2' values="4;1004;4" dur="50s" repeatCount="indefinite" />
+                  <linearGradient
+                    id="whitecaps"
+                    x2="10"
+                    spreadMethod="reflect"
+                    gradientUnits="userSpaceOnUse"
+                    gradientTransform="rotate(65)"
+                  >
+                    <stop offset="90%" stopOpacity={0} />
+                    <stop offset="90%" stop-color="rgb(153, 248, 263)" />
+                    <animate
+                      attributeName="x1"
+                      values="1;100;1"
+                      dur="50s"
+                      repeatCount="indefinite"
+                    />
+                    <animate
+                      attributeName="x2"
+                      values="10;110;10"
+                      dur="50s"
+                      repeatCount="indefinite"
+                    />
                   </linearGradient>
                   <filter id="whitecaps-turbulence">
-                  <feTurbulence
+                    <feTurbulence
                       type="turbulence"
-                      baseFrequency={turbulenceFreq}
+                      baseFrequency={turbulenceFreq / 2}
                       numOctaves="3"
-
-                      width={400}
-                      height={400}
-                    >
-                      
-                    </feTurbulence>
+                    ></feTurbulence>
                     <feDisplacementMap
                       in2="turbulence"
                       in="SourceGraphic"
@@ -119,10 +131,10 @@ export const Island = () => {
                       yChannelSelector="G"
                     />
                   </filter>
-                <radialGradient id="ocean">
+                  <radialGradient id="ocean">
                     <stop offset="0%" stopColor="rgb(182, 220, 238)" />
-                    <stop offset="80%" stopColor="rgb(46, 160, 212)" />
-                    <stop offset="100%" stopColor="rgb(46, 160, 212)" />
+                    <stop offset="70%" stopColor="rgb(182, 220, 238)" />
+                    <stop offset="95%" stopColor="rgb(46, 160, 212)" />
                   </radialGradient>
                   <filter id="waves">
                     <feTurbulence
@@ -138,18 +150,13 @@ export const Island = () => {
                     />
                     <feTurbulence
                       type="turbulence"
-                      baseFrequency={0.1}
+                      baseFrequency={turbulenceFreq / 2}
                       numOctaves="12"
                       result="turbulence"
-
-                      width={400}
-                      height={400}
-                    >
-                      
-                    </feTurbulence>
+                    ></feTurbulence>
                     <feColorMatrix
                       in="turbulence"
-                      type="luminanceToAlpha"
+                      type="saturate"
                       values="0"
                       result="luminance"
                     />
@@ -165,28 +172,65 @@ export const Island = () => {
                       mode="multiply"
                       result="dunes"
                     />
-                    <feBlend
-                      in="dunes"
-                      in2="sand"
-                      mode="overlay"
+                    <feBlend in="dunes" in2="sand" mode="normal" />
+                  </filter>
+                  <filter id="waves-inner" height={size} width={size} x={(width - size) / 2} y={(height - size) / 2}>
+                    <feTurbulence
+                      type="fractalNoise"
+                      baseFrequency="100"
+                      result="noise"
                     />
+                    <feColorMatrix
+                      in="noise"
+                      type="saturate"
+                      values="0"
+                      result="saturation"
+                    />
+                    <feTurbulence
+                      type="turbulence"
+                      baseFrequency={turbulenceFreq / 2}
+                      numOctaves="12"
+                      result="turbulence"
+                    ></feTurbulence>
+                    <feColorMatrix
+                      in="turbulence"
+                      type="saturate"
+                      values="0"
+                      result="luminance"
+                    />
+                    <feBlend
+                      in="SourceGraphic"
+                      in2="saturation"
+                      mode="multiply"
+                      result="sand"
+                    />
+                    <feBlend
+                      in="SourceGraphic"
+                      in2="luminance"
+                      mode="multiply"
+                      result="dunes"
+                    />
+                    <feBlend in="dunes" in2="sand" mode="normal" />
                   </filter>
                 </defs>
                 <rect
-                filter='url(#waves)'
-                  fill="url(#ocean)"
-                  x={-50}
-                  y={-50}
-                  height={200}
-                  width={200}
+                  filter="url(#waves)"
+                  fill="rgb(46, 160, 212)"
+                  x={0}
+                  y={0}
+                  height={height}
+                  width={width}
                 ></rect>
-                 <rect
-                filter='url(#whitecaps-turbulence)'
+                <rect 
+                 filter="url(#waves-inner)"
+                   fill='url(#ocean)' height={size} width={size} x={(width - size) / 2} y={(height - size) / 2}></rect>
+                <rect
+                  filter="url(#whitecaps-turbulence)"
                   fill="url(#whitecaps)"
-                  x={-50}
-                  y={-50}
-                  height={200}
-                  width={200}
+                  x={0}
+                  y={0}
+                  height={height}
+                  width={width}
                 ></rect>
               </svg>
               <svg
@@ -226,11 +270,11 @@ export const Island = () => {
                     />
                   </clipPath>
                   <radialGradient id="color">
-                    <stop offset="0%" stopColor="rgb(120, 200, 180)" />
-                    <stop offset="70%" stopColor="rgb(120, 200, 180)" />
-                    <stop offset="99%" stopColor="rgb(255, 238, 182)" />
+                    <stop offset="0%" stopColor="rgb(10, 120, 110)" />
+                    <stop offset="70%" stopColor="rgb(10, 120, 110)" />
+                    <stop offset="99%" stopColor="rgb(245, 228, 172)" />
                   </radialGradient>
-                  <filter id="displacementFilter">
+                  <filter id="displacementFilter" colorInterpolationFilters='sRGB'>
                     <feTurbulence
                       type="turbulence"
                       baseFrequency={turbulenceFreq}
@@ -245,7 +289,7 @@ export const Island = () => {
                       yChannelSelector="G"
                     />
                   </filter>
-                  <filter id="sand">
+                  <filter id="sand" colorInterpolationFilters='sRGB' >
                     <feTurbulence
                       type="fractalNoise"
                       baseFrequency="100"
@@ -265,7 +309,7 @@ export const Island = () => {
                     />
                     <feColorMatrix
                       in="turbulence"
-                      type="luminanceToAlpha"
+                      type="saturate"
                       values="0"
                       result="luminance"
                     />
@@ -278,7 +322,7 @@ export const Island = () => {
                     <feBlend
                       in="SourceGraphic"
                       in2="luminance"
-                      mode="multiply"
+                      mode="overlay"
                       result="dunes"
                     />
                     <feBlend
@@ -292,10 +336,7 @@ export const Island = () => {
                       operator="erode"
                       radius="1"
                     />
-                    <feComposite in="fill" operator="in" result="fill-area" />
-                    <feMerge>
-                      <feMergeNode in="fill-area" />
-                    </feMerge>
+                    <feComposite in="fill" operator="in" />
                   </filter>
                   <filter id="f1" x="0" y="0" width="200%" height="200%">
                     <feGaussianBlur in="SourceGraphic" stdDeviation="0.2" />
@@ -319,7 +360,7 @@ export const Island = () => {
                           values={`
                       0;
                       0.25rem;
-                      0.75rem;
+                      1rem;
                       0.25rem:
                       0;
                   `}
@@ -424,7 +465,7 @@ export const Island = () => {
                 >
                   <svg
                     style={{
-                      transform: 'translate(-90px, -90px)',
+                      transform: 'translate(-110px, -110px)',
                     }}
                     clipPath="url(#mag)"
                     height={size}
@@ -439,7 +480,7 @@ export const Island = () => {
               {gridRect && (
                 <div
                   style={{
-                    transform: 'translate(-90px, -90px)',
+                    transform: 'translate(-110px, -110px)',
                     position: 'absolute',
                     left: gridRect.x,
                     top: gridRect.y,
@@ -452,11 +493,11 @@ export const Island = () => {
                   }}
                   onClick={(e) => {
                     const x = Math.floor(
-                      (e.clientX - gridRect!.x + 90) /
+                      (e.clientX - gridRect!.x + 110) /
                         (gridRect!.width / game.scale)
                     )
                     const y = Math.floor(
-                      (e.clientY - gridRect!.y + 90) /
+                      (e.clientY - gridRect!.y + 110) /
                         (gridRect!.height / game.scale)
                     )
                     game.interactAt(x, y)

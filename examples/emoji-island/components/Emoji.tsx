@@ -7,7 +7,7 @@ export const Emoji = ({ entity, scale }: { entity: Entity; scale: number }) => {
   useMagicClass(entity)
 
   return entity.position.find((coord) => coord < 0) ? null : (
-    <g
+    <g className='emoji'><g
       height={12 * scale}
       widths={12 * scale}
       style={{
@@ -19,6 +19,6 @@ export const Emoji = ({ entity, scale }: { entity: Entity; scale: number }) => {
       }}
     >
       <use xlinkHref={`#${entity.emoji}`} />
-    </g>
+    </g></g>
   )
 }

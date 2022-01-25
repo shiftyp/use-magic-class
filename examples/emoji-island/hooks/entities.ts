@@ -266,7 +266,7 @@ export class Carnivore extends Entity {
       const dice = Math.random()
       const food = game.peekRandom(this, Herbivore)
 
-      if (food) {
+      if (food && dice >= 0.75) {
         game.replace(food, this)
         this.energy++
         return
@@ -313,7 +313,7 @@ export class Fire extends Entity {
       const dice = Math.random()
       const fuel = game.peekRandom(this, Tree)
 
-      if (fuel && dice < 0.25) {
+      if (fuel && dice < 0.3) {
         game.replace(fuel, Fire)
       }
 

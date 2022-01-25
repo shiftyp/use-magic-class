@@ -6,7 +6,7 @@
 html,
 body {
   margin: 0;
-  overflow: visible;
+  overflow: hidden;
   font-size: 14px;
   max-width: 100vw;
 }
@@ -54,31 +54,25 @@ li {
 }
 
 @keyframes shake {
-  0% {
-    opacity: 0.75;
-  }
   10%,
   90% {
-    transform: rotate(-10deg);
+    transform: translateX(0px);
   }
 
   20%,
   80% {
-    transform: rotate(12deg);
+    transform: translateX(-0.5px);
   }
 
   30%,
   50%,
   70% {
-    transform: rotate(-4deg);
+    transform: translateX(0.5px);
   }
 
   40%,
   60% {
-    transform: rotate(10deg);
-  }
-  100% {
-    opacity: 0;
+    transform: translateX(-0.5px);
   }
 }
 
@@ -216,6 +210,8 @@ svg {
 
 .emoji {
   transition: 0.5s linear all;
+  animation: shake 1s ease-in-out;
+  transform-origin: 50% 100%;
 }
 
 .square-exit .square {
