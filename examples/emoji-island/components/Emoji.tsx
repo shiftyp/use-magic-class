@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 
 import { Entity } from '../hooks/entities'
-import { useMagicClass } from '../../../magic/react'
+import { useMagicClass } from 'use-magic-class/react'
 
 export const Emoji = ({ entity, scale }: { entity: Entity; scale: number }) => {
   useMagicClass(entity)

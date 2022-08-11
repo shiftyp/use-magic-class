@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 
 import AutoSizer from 'react-virtualized-auto-sizer'
 import { Grid } from './Grid'
@@ -40,7 +40,7 @@ export const Island = () => {
     throttle((e) => {
       setMousePosition([e.clientX, e.clientY])
     }, 50),
-    [svg]
+    []
   )
 
   return (
@@ -95,48 +95,150 @@ export const Island = () => {
                 width={width}
               >
                 <defs>
-                  <linearGradient
-                    id="whitecaps"
-                    x2="10"
-                    spreadMethod="reflect"
-                    gradientUnits="userSpaceOnUse"
-                    gradientTransform="rotate(65)"
+                  <filter id="f3">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="0.5" />
+                  </filter>
+
+                  <filter
+                    id="shelfFilter"
+                    colorInterpolationFilters="sRGB"
                   >
-                    <stop offset="90%" stopOpacity={0} />
-                    <stop offset="90%" stop-color="rgb(153, 248, 263)" />
-                    <animate
-                      attributeName="x1"
-                      values="1;100;1"
-                      dur="50s"
-                      repeatCount="indefinite"
+                    <feTurbulence
+                      type="turbulence"
+                      baseFrequency={turbulenceFreq}
+                      numOctaves="2"
+                      result="turbulence"
                     />
-                    <animate
-                      attributeName="x2"
-                      values="10;110;10"
-                      dur="50s"
-                      repeatCount="indefinite"
+                    <feDisplacementMap
+                      in2="turbulence"
+                      in="SourceGraphic"
+                      scale="10"
+                      xChannelSelector="R"
+                      yChannelSelector="G"
                     />
-                  </linearGradient>
+                  </filter>
+                  <pattern
+                    id="whitecaps2"
+                    width="20"
+                    height="20"
+                    patternUnits="userSpaceOnUse"
+                    patternTransform="rotate(65)"
+                  >
+                    <filter id="f2" x="0" y="0" width="20" height="20">
+                      <feGaussianBlur in="SourceAlpha" stdDeviation="1.5" />
+                      <feOffset dx="7" result="shadow" />
+                      <feTurbulence
+                        type="fractalNoise"
+                        baseFrequency="1"
+                        scale={0.1}
+                        result="noise"
+                      />
+
+                      <feMorphology
+                        in="SourceAlpha"
+                        in2="luminance"
+                        operator="dilate"
+                        radius="4"
+                        result="fill"
+                      />
+                      <feColorMatrix
+                        in="fill"
+                        type="luminanceToAlpha"
+                        result="gray"
+                      />
+
+                      <feGaussianBlur
+                        in="SourceGraphic"
+                        stdDeviation="1"
+                        result="blur"
+                      />
+                      <feBlend
+                        in="blur"
+                        in2="gray"
+                        mode="divide"
+                        result="graphic"
+                      />
+                      <feComponentTransfer in="graphic" result="gamma">
+                        <feFuncG type="linear" slope="1.0" intercept="0.1" />
+                        <feFuncB type="linear" slope="1.0" intercept="0.1" />
+                        <feFuncR type="linear" slope="1.0" intercept="0.1" />
+                      </feComponentTransfer>
+                      <feMerge>
+                        <feMergeNode in="shadow" />
+                        <feMergeNode in="gamma" />
+                      </feMerge>
+                    </filter>
+                    <rect
+                      filter="url(#f2)"
+                      fill="rgb(153, 248, 263)"
+                      strokeWidth="2px"
+                      x="7"
+                      width="2"
+                      y="0"
+                      height="3"
+                    ></rect>
+                    <rect
+                      filter="url(#f2)"
+                      fill="rgb(153, 248, 263)"
+                      strokeWidth="2px"
+                      x="5"
+                      width="6"
+                      y="10"
+                      height="2"
+                    ></rect>
+                    <rect
+                      filter="url(#f2)"
+                      fill="rgb(153, 248, 263)"
+                      strokeWidth="2px"
+                      x="10"
+                      width="3"
+                      y="14"
+                      height="4"
+                    ></rect>
+                    {game.showWaves && <animate
+                      attributeName="x"
+                      values="0;20"
+                      repeatCount="indefinite"
+                      dur="10s"
+                    />}
+                  </pattern>
                   <filter id="whitecaps-turbulence">
                     <feTurbulence
                       type="turbulence"
-                      baseFrequency={turbulenceFreq / 2}
+                      baseFrequency={turbulenceFreq * 0.5 + 0.01}
                       numOctaves="3"
                     ></feTurbulence>
                     <feDisplacementMap
                       in2="turbulence"
                       in="SourceGraphic"
-                      scale="30"
+                      scale={30}
                       xChannelSelector="R"
                       yChannelSelector="G"
                     />
                   </filter>
-                  <radialGradient id="ocean">
-                    <stop offset="0%" stopColor="rgb(182, 220, 238)" />
-                    <stop offset="70%" stopColor="rgb(182, 220, 238)" />
-                    <stop offset="95%" stopColor="rgb(46, 160, 212)" />
+                  <radialGradient id="ocean" cx={0.5} cy={0.5} r={0.5}>
+                    <stop
+                      offset="0%"
+                      stopOpacity={1}
+                      stopColor="rgb(245, 228, 172)"
+                    />
+                    <stop
+                      offset="80%"
+                      stopOpacity={0.5}
+                      stopColor="rgb(245, 228, 172)"
+                    />
+                    <stop
+                      offset="97%"
+                      stopOpacity={0.2}
+                      stopColor="rgb(128, 127, 121)"
+                    />
+                    <stop
+                      offset="100%"
+                      stopOpacity={0}
+                      stopColor="rgb(46, 160, 212)"
+                    />
                   </radialGradient>
-                  <filter id="waves">
+                  <filter id="waves" colorInterpolationFilters="sRGB">
                     <feTurbulence
                       type="fractalNoise"
                       baseFrequency="100"
@@ -163,51 +265,13 @@ export const Island = () => {
                     <feBlend
                       in="SourceGraphic"
                       in2="saturation"
-                      mode="multiply"
+                      mode="overlay"
                       result="sand"
                     />
                     <feBlend
                       in="SourceGraphic"
                       in2="luminance"
-                      mode="multiply"
-                      result="dunes"
-                    />
-                    <feBlend in="dunes" in2="sand" mode="normal" />
-                  </filter>
-                  <filter id="waves-inner" height={size} width={size} x={(width - size) / 2} y={(height - size) / 2}>
-                    <feTurbulence
-                      type="fractalNoise"
-                      baseFrequency="100"
-                      result="noise"
-                    />
-                    <feColorMatrix
-                      in="noise"
-                      type="saturate"
-                      values="0"
-                      result="saturation"
-                    />
-                    <feTurbulence
-                      type="turbulence"
-                      baseFrequency={turbulenceFreq / 2}
-                      numOctaves="12"
-                      result="turbulence"
-                    ></feTurbulence>
-                    <feColorMatrix
-                      in="turbulence"
-                      type="saturate"
-                      values="0"
-                      result="luminance"
-                    />
-                    <feBlend
-                      in="SourceGraphic"
-                      in2="saturation"
-                      mode="multiply"
-                      result="sand"
-                    />
-                    <feBlend
-                      in="SourceGraphic"
-                      in2="luminance"
-                      mode="multiply"
+                      mode="overlay"
                       result="dunes"
                     />
                     <feBlend in="dunes" in2="sand" mode="normal" />
@@ -221,16 +285,24 @@ export const Island = () => {
                   height={height}
                   width={width}
                 ></rect>
-                <rect 
-                 filter="url(#waves-inner)"
-                   fill='url(#ocean)' height={size} width={size} x={(width - size) / 2} y={(height - size) / 2}></rect>
+
                 <rect
                   filter="url(#whitecaps-turbulence)"
-                  fill="url(#whitecaps)"
+                  fill="url(#whitecaps2)"
                   x={0}
                   y={0}
                   height={height}
                   width={width}
+                ></rect>
+
+                <rect
+                  filter="url(#f3) url(#shelfFilter)"
+                  transform="translate(-25, -25)"
+                  fill="url(#ocean)"
+                  height={size}
+                  width={size}
+                  x={(width - size) / 2}
+                  y={(height - size) / 2}
                 ></rect>
               </svg>
               <svg
@@ -274,7 +346,10 @@ export const Island = () => {
                     <stop offset="70%" stopColor="rgb(10, 120, 110)" />
                     <stop offset="99%" stopColor="rgb(245, 228, 172)" />
                   </radialGradient>
-                  <filter id="displacementFilter" colorInterpolationFilters='sRGB'>
+                  <filter
+                    id="displacementFilter"
+                    colorInterpolationFilters="sRGB"
+                  >
                     <feTurbulence
                       type="turbulence"
                       baseFrequency={turbulenceFreq}
@@ -289,7 +364,7 @@ export const Island = () => {
                       yChannelSelector="G"
                     />
                   </filter>
-                  <filter id="sand" colorInterpolationFilters='sRGB' >
+                  <filter id="sand" colorInterpolationFilters="sRGB">
                     <feTurbulence
                       type="fractalNoise"
                       baseFrequency="100"
@@ -384,47 +459,79 @@ export const Island = () => {
                     </g>
                   </symbol>
                 </defs>
-                <foreignObject x="140" y="250">
+                <foreignObject x="140" y="250" width={250} height="200">
                   <form
                     style={{
                       fontSize: '0.25rem',
                       display: 'flex',
                       alignItems: 'center',
+                      transform: 'translate(-50%, 0)',
+                      whiteSpace: 'nowrap',
                     }}
                   >
-                    <label
-                      style={{
-                        transform: 'translate(-50%, 0)',
-                        whiteSpace: 'nowrap',
+                    <svg style={{
+                      flexShrink: 0,
+                    }} height="1.5rem" width="3rem" viewBox='0 0 32 64'><use xlinkHref='#E243'></use></svg>
+                    <input
+                      title="Island Size"
+                      type="range"
+                      min={3}
+                      max={20}
+                      step={1}
+                      defaultValue={game.scale}
+                      onMouseDown={() => {
+                        game.clearEntities()
+
+                        const handler = () => {
+                          game.makeEntities()
+                          window.removeEventListener('mouseup', handler)
+                          window.removeEventListener('mouseleave', handler)
+                        }
+
+                        window.addEventListener('mouseup', handler)
+                        window.addEventListener('mouseleave', handler)
                       }}
-                    >
-                      <input
-                        title="Island Size"
-                        type="range"
-                        min={3}
-                        max={20}
-                        step={1}
-                        defaultValue={game.scale}
-                        onMouseDown={() => {
-                          game.clearEntities()
+                      onTouchStart={() => {
+                        game.clearEntities()
 
-                          const handler = () => {
-                            game.makeEntities()
-                            window.removeEventListener('mouseup', handler)
-                            window.removeEventListener('mouseleave', handler)
-                          }
+                        const handler = () => {
+                          game.makeEntities()
+                          window.removeEventListener('touchend', handler)
+                        }
 
-                          window.addEventListener('mouseup', handler)
-                          window.addEventListener('mouseleave', handler)
-                        }}
-                        onChange={(e) => {
-                          game.scale = e.target.valueAsNumber
-                        }}
-                        style={{
-                          fontSize: '0.25rem',
-                        }}
-                      />
-                    </label>
+                        window.addEventListener('touchend', handler)
+                      }}
+                      onChange={(e) => {
+                        game.scale = e.target.valueAsNumber
+                      }}
+                      style={{
+                        fontSize: '0.25rem',
+                        display: 'inline-block',
+                        width: 200,
+                      }}
+                    />
+                     <svg style={{
+                      flexShrink: 0,
+                    }} height="1.5rem" width="1.5rem" viewBox='20 0 32 72'><use xlinkHref="#2601"></use></svg>
+                    <input
+                      type="checkbox"
+                      title='Show Clouds'
+                      checked={game.showClouds}
+                      onClick={(e) =>
+                        game.showClouds = (e.target as HTMLInputElement).checked
+                      }
+                    />
+                    <svg style={{
+                      flexShrink: 0,
+                    }} height="1.5rem" width="1.5rem" viewBox='20 0 32 72'><use xlinkHref="#1F30A"></use></svg>
+                    <input
+                      type="checkbox"
+                      title='Show Waves'
+                      checked={game.showWaves}
+                      onClick={(e) =>
+                        game.showWaves = (e.target as HTMLInputElement).checked
+                      }
+                    />
                   </form>
                 </foreignObject>
                 <g
@@ -441,6 +548,206 @@ export const Island = () => {
                 </g>
               </svg>
 
+              {game.showClouds && <svg
+                style={{
+                  position: 'absolute',
+                  top: -50,
+                  left: -50,
+                  zIndex: 0,
+                  overflow: 'hidden',
+                  pointerEvents: 'none',
+                }}
+                viewBox={`0 0 ${width} ${height}`}
+                height={height + 100}
+                width={width + 100}
+              >
+                <defs>
+                  <filter id="f5">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="20" />
+                  </filter>
+                  <pattern
+                    id="clouds"
+                    width="2000"
+                    height="2000"
+                    patternUnits="userSpaceOnUse"
+                    patternTransform="rotate(65)"
+                  >
+                    <filter id="f4" x="0" y="0" width="20" height="20">
+                      <feGaussianBlur in="SourceAlpha" stdDeviation="100" />
+                      <feOffset dx="70" dy="70" result="shadow" />
+                      <feTurbulence
+                        type="fractalNoise"
+                        baseFrequency="1"
+                        scale={0.1}
+                        result="noise"
+                      />
+                      <feComponentTransfer in="shadow" result="shadow-alpha">
+                        <feFuncA type="linear" slope="1 " intercept="0" />
+                      </feComponentTransfer>
+                      <feMorphology
+                        in="SourceAlpha"
+                        in2="luminance"
+                        result="fill"
+                      />
+                      <feColorMatrix
+                        in="fill"
+                        type="luminanceToAlpha"
+                        result="gray"
+                      />
+
+                      <feGaussianBlur
+                        in="SourceGraphic"
+                        stdDeviation="35"
+                        result="blur"
+                      />
+                      <feBlend
+                        in="blur"
+                        in2="gray"
+                        mode="divide"
+                        result="graphic"
+                      />
+                      <feComponentTransfer in="graphic" result="gamma">
+                        <feFuncR type="linear" slope="1.0" intercept="0.0" />
+                        <feFuncG type="linear" slope="1.0" intercept="0.1" />
+                        <feFuncB type="linear" slope="1.0" intercept="0.1" />
+                        <feFuncR type="linear" slope="1.0" intercept="0.1" />
+                      </feComponentTransfer>
+                      <feMerge>
+                        <feMergeNode in="shadow-alpha" />
+                        <feMergeNode in="gamma" />
+                      </feMerge>
+                    </filter>
+                    <rect
+                      filter="url(#f4)"
+                      fill="rgb(255, 255, 255)"
+                      strokeWidth="2px"
+                      x="1000"
+                      width="100"
+                      y="400"
+                      height="300"
+                      rx={100}
+                      ry={100}
+                    ></rect>
+                    <rect
+                      filter="url(#f4)"
+                      fill="rgb(255, 255, 255)"
+                      strokeWidth="2px"
+                      x="700"
+                      width="150"
+                      height="400"
+                      y="1500"
+                      rx={100}
+                      ry={100}
+                    ></rect>
+                    <rect
+                      filter="url(#f4)"
+                      fill="rgb(255, 255, 255)"
+                      strokeWidth="2px"
+                      x="1700"
+                      width="100"
+                      y="100"
+                      height="100"
+                      rx={100}
+                      ry={100}
+                    ></rect>
+                    <rect
+                      filter="url(#f4)"
+                      fill="rgb(255, 255, 255)"
+                      strokeWidth="2px"
+                      x="800"
+                      width="200"
+                      y="40"
+                      height="150"
+                      rx={100}
+                      ry={100}
+                    ></rect>
+                    <rect
+                      filter="url(#f4)"
+                      fill="rgb(255, 255, 255)"
+                      strokeWidth="2px"
+                      x="200"
+                      width="150"
+                      height="100"
+                      y="1900"
+                      rx={100}
+                      ry={100}
+                    ></rect>
+                    <rect
+                      filter="url(#f4)"
+                      fill="rgb(255, 255, 255)"
+                      strokeWidth="2px"
+                      x="100"
+                      width="100"
+                      y="100"
+                      height="300"
+                      rx={100}
+                      ry={100}
+                    ></rect>
+                    <rect
+                      filter="url(#f4)"
+                      fill="rgb(255, 255, 255)"
+                      strokeWidth="2px"
+                      x="500"
+                      width="200"
+                      y="400"
+                      height="500"
+                      rx={100}
+                      ry={100}
+                    ></rect>
+                    <rect
+                      filter="url(#f4)"
+                      fill="rgb(255, 255, 255)"
+                      strokeWidth="2px"
+                      x="200"
+                      width="150"
+                      height="100"
+                      y="200"
+                      rx={100}
+                      ry={100}
+                    ></rect>
+                    <rect
+                      filter="url(#f4)"
+                      fill="rgb(255, 255, 255)"
+                      strokeWidth="2px"
+                      x="100"
+                      width="100"
+                      y="100"
+                      height="100"
+                      rx={100}
+                      ry={100}
+                    ></rect>
+                    <animate
+                      attributeName="x"
+                      values="0;2000"
+                      repeatCount="indefinite"
+                      dur="100s"
+                    />
+                  </pattern>
+                  <filter id="cloud-turbulence">
+                    <feTurbulence
+                      type="turbulence"
+                      baseFrequency={0.02}
+                      numOctaves="12"
+                    ></feTurbulence>
+                    <feDisplacementMap
+                      in2="turbulence"
+                      in="SourceGraphic"
+                      scale={150}
+                      xChannelSelector="R"
+                      yChannelSelector="G"
+                    />
+                  </filter>
+                </defs>
+
+                <rect
+                  filter="url(#f5) url(#cloud-turbulence)"
+                  fill="url(#clouds)"
+                  x={0}
+                  y={0}
+                  height={height}
+                  width={width}
+                ></rect>
+              </svg>}
               <div
                 style={{
                   position: 'absolute',
@@ -476,7 +783,6 @@ export const Island = () => {
                   </svg>
                 </div>
               </div>
-
               {gridRect && (
                 <div
                   style={{

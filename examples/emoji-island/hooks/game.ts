@@ -1,5 +1,5 @@
-import { isEffect, isMemo, isState } from 'use-magic-class'
-import { Entities, Entity, EntityName, Space } from './entities'
+import { isEffect, isState } from 'use-magic-class'
+import { Entities, Entity, Space } from './entities'
 
 const pickRandom = <T>(arr: T[]): T => {
   return arr[Math.floor(Math.random() * arr.length)]
@@ -8,13 +8,19 @@ export class Game {
   @isState
   public scale = 7
 
+  @isState
+  showClouds = true
+
+  @isState
+  showWaves = true
+
   public clearEntities() {
     this.ctors = new Map()
     this.entities = []
     this.entitiesSet = new Set()
   }
 
-  @isEffect([])
+  @isEffect([true])
   public makeEntities() {
     this.entitiesSet.clear()
     this.ctors.clear()
@@ -40,8 +46,10 @@ export class Game {
       }
     })
 
-
-    for (const entity of Array.from(this.ctors.values()).reduce((all, entities) => [...all, ...entities], [])) {
+    for (const entity of Array.from(this.ctors.values()).reduce(
+      (all, entities) => [...all, ...entities],
+      []
+    )) {
       this.entitiesSet.add(entity)
     }
 
@@ -55,7 +63,7 @@ export class Game {
   }
 
   @isState
-  private ctors = new Map<{ new () : Entity }, Entity[]>()
+  private ctors = new Map<{ new (): Entity }, Entity[]>()
 
   @isState
   private entities: Entity[] = []
@@ -127,21 +135,23 @@ export class Game {
   }
 
   public newEntity<T extends Entity>(ctor?: { new (): T }): T {
-    const ctorEntities = ctor ? this.ctors.get(ctor)! : this.ctors.get(pickRandom(Array.from(this.ctors.keys())))!
-    const [entity] = ctorEntities.splice(Math.floor(Math.random() * ctorEntities.length), 1)
+    const ctorEntities = ctor
+      ? this.ctors.get(ctor)!
+      : this.ctors.get(pickRandom(Array.from(this.ctors.keys())))!
+    const [entity] = ctorEntities.splice(
+      Math.floor(Math.random() * ctorEntities.length),
+      1
+    )
     return entity as T
   }
 
   public map<T>(cb: (entity: Entity) => T): T[] {
-    let index = 0;
     let ret: T[] = []
-    this.entitiesSet.forEach((entity) =>
-      ret.push(cb(entity))
-    )
+    this.entitiesSet.forEach((entity) => ret.push(cb(entity)))
 
-    return ret;
+    return ret
   }
-  
+
   public interactAt(x: number, y: number) {
     this.entities[y * this.scale + x].interact()
   }
@@ -149,6 +159,35 @@ export class Game {
   @isEffect<Game>(({ entities }) => [entities])
   private doActions() {
     let lastTime = performance.now()
+    let lastPerfTime = performance.now()
+    let perfDiffs: number[] = []
+
+    let frame: number | null = null
+
+    const testFramerate = () => {
+      const now = performance.now()
+      const diff = now - lastPerfTime
+      lastPerfTime = now
+
+      perfDiffs.push(diff)
+
+      if (perfDiffs.length > 10) {
+        perfDiffs.shift()
+      }
+
+      const dropped = perfDiffs.filter((diff) => diff > 1000 / 2)
+
+      if (dropped.length > 5) {
+        console.log(perfDiffs)
+        this.showWaves = false
+        this.showClouds = false
+        perfDiffs = []
+      } else {
+        frame = window.requestAnimationFrame(testFramerate)
+      }
+    }
+
+    frame = window.requestAnimationFrame(testFramerate)
 
     const interval = setInterval(() => {
       window.requestAnimationFrame(() => {
@@ -164,12 +203,18 @@ export class Game {
             entity.act()
             this.lastActed.set(entity, 0)
           } else {
-            this.lastActed.set(entity, lastActed === undefined ? 0 : lastActed + diff)
+            this.lastActed.set(
+              entity,
+              lastActed === undefined ? 0 : lastActed + diff
+            )
           }
         })
       })
     }, 100)
 
-    return () => clearInterval(interval)
+    return () => {
+      if (frame) cancelAnimationFrame(frame)
+      if (interval) clearInterval(interval)
+    }
   }
 }
