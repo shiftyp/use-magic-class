@@ -1,0 +1,2 @@
+- name: Swimm Verify
+  uses: swimmio/swimm-verify-action@v1.3
