@@ -5,7 +5,7 @@ file_version: 1.0.2
 app_version: 0.9.3-5
 ---
 
-`📄 package.json` Is the package.json.
+`📄 examples/emoji-island/package.json` Is the package.json.
 
 `📄 examples/emoji-island/index.html` is the main file for Emoji Island
 
