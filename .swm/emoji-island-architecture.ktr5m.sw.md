@@ -3,11 +3,43 @@ id: ktr5m
 name: Emoji Island Architecture
 file_version: 1.0.2
 app_version: 0.9.3-5
+file_blobs:
+  examples/emoji-island/hooks/game.ts: cf2eab3f26a3c4e050e54c2c42ce08947fe3b358
 ---
 
 `📄 examples/emoji-island/package.json` Is the package.json.
 
 `📄 examples/emoji-island/index.html` is the main file for Emoji Island
+
+<br/>
+
+This is the game loop
+<!-- NOTE-swimm-snippet: the lines below link your snippet to Swimm -->
+### 📄 examples/emoji-island/hooks/game.ts
+```typescript
+⬜ 192        const interval = setInterval(() => {
+⬜ 193          window.requestAnimationFrame(() => {
+⬜ 194            const time = performance.now()
+🟩 195            const diff = time - lastTime
+🟩 196    
+🟩 197            lastTime = time
+🟩 198    
+🟩 199            this.entities.forEach((entity) => {
+🟩 200              const lastActed = this.lastActed.get(entity)
+🟩 201    
+🟩 202              if (lastActed !== undefined && lastActed + diff > entity.speed) {
+🟩 203                entity.act()
+🟩 204                this.lastActed.set(entity, 0)
+🟩 205              } else {
+🟩 206                this.lastActed.set(
+🟩 207                  entity,
+🟩 208                  lastActed === undefined ? 0 : lastActed + diff
+🟩 209                )
+🟩 210              }
+⬜ 211            })
+⬜ 212          })
+⬜ 213        }, 100)
+```
 
 <br/>
 
