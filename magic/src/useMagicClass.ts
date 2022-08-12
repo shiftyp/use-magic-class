@@ -1,17 +1,30 @@
+import { useRef } from 'react'
 import 'reflect-metadata'
 
 const stateMetadataKey = Symbol()
+const stateCollectionMetadataKey = Symbol()
 const effectMetadataKey = Symbol()
 const layoutEffectMetadataKey = Symbol()
 const contextMetadataKey = Symbol()
 const memoMetadataKey = Symbol()
 const magicMetadataKey = Symbol()
+const magicKey = Symbol()
 
-interface Context<T> {
-  Provider: ((props: { value: T, children: any }) => any) | { props: { value: T, children: any } }
+interface Context<
+  T,
+  ProviderProps = { props: { value: T; children: any } },
+  ConsumerProps = { children: (value: T) => any }
+> {
+  Provider:
+    | ((props: { value: T; children: any }) => any)
+    | {
+        new (props: ProviderProps): { props: ProviderProps }
+      }
   Consumer:
-    | ((props: { children: (value: T) => any }) => any)
-    | { props: { children: (value: T) => any } }
+    | ((props: ConsumerProps) => any)
+    | {
+        new (props: ConsumerProps): { props: ConsumerProps }
+      }
 }
 
 type Constructor<T = any> =
@@ -21,11 +34,25 @@ type Constructor<T = any> =
   | {
       (): T
     }
+  | T
+
+type MagicObject<T> = T & {
+  [magicKey]: {
+    state: Partial<T>[]
+    store: Partial<T>
+  }
+}
 
 export const isState = Reflect.metadata(stateMetadataKey, true)
 
 const getIsState = (target: any, propertyKey: string) => {
   return !!Reflect.getMetadata(stateMetadataKey, target, propertyKey)
+}
+
+export const isStateCollection = Reflect.metadata(stateCollectionMetadataKey, true)
+
+const getIsStateCollection = (target: any, propertyKey: string) => {
+  return !!Reflect.getMetadata(stateCollectionMetadataKey, target, propertyKey)
 }
 
 export const isEffect = <Target extends Object>(
@@ -67,31 +94,53 @@ const getIsMagic = (target: any, propertyKey: string) => {
   return Reflect.getMetadata(magicMetadataKey, target, propertyKey)
 }
 
-export const createUseMagicClass =
-  ({
-    useEffect,
-    useLayoutEffect,
-    useState,
-    useContext,
-    useMemo,
-  }: {
-    useEffect: (
-      cb: () => void | (() => void),
-      dependencies: any[] | undefined
-    ) => void
-    useLayoutEffect: (
-      cb: () => void | (() => void),
-      dependencies: any[] | undefined
-    ) => void
-    useState: <T>(initial: T) => [T, (value: T) => void]
-    useContext: <T>(context: Context<T>) => T
-    useMemo: <T>(cb: () => T, dependencies: any[]) => T
-  }) => {
-    const useMagicClass = <Obj extends Object>(Constructor: Constructor<Obj>) => {
-    const [obj, magic, states, effects, layoutEffects, memos, contexts] =
-      useMemo(() => {
-        let obj: Obj = {} as Obj
+export const createUseMagicClass = ({
+  useEffect,
+  useLayoutEffect,
+  useState,
+  useContext,
+  useMemo,
+  useReducer,
+}: {
+  useEffect: (
+    cb: () => void | (() => void),
+    dependencies: any[] | undefined
+  ) => void
+  useLayoutEffect: (
+    cb: () => void | (() => void),
+    dependencies: any[] | undefined
+  ) => void
+  useState: <T>(initial: T) => [T, (value: T) => void]
+  useContext: <T>(context: Context<T>) => T
+  useMemo: <T>(cb: () => T, dependencies: any[]) => T
+  useReducer: <T = void, U = void>(cb: (u: U, t: T) => U, init: U) => [U, (t: T) => void]
+}) => {
+  const useMagicClass = <Obj extends Object>(Constructor: Constructor<Obj>) => {
+    const ignoreChanges = typeof Constructor === 'function'
+    const memoDeps = [ignoreChanges ? true : Constructor]
+    let inEffectPhase = false
+    let inMemoPhase = false
 
+    const [last, update] = useState(0)
+
+    const doUpdate = useRef<() => void>(() => {})
+
+    doUpdate.current = () => {
+      doUpdate.current = () => {}
+      update(last % Number.MAX_SAFE_INTEGER + 1)
+    }
+    const [
+      obj,
+      magic,
+      effects,
+      layoutEffects,
+      memos,
+      contexts,
+      magicState,
+    ] = useMemo(() => {
+      let obj = {} as MagicObject<Obj>
+
+      if (typeof Constructor === 'function') {
         try {
           // @ts-ignore
           obj = new Constructor()
@@ -99,142 +148,200 @@ export const createUseMagicClass =
           // @ts-ignore
           obj = Constructor()
         }
+      } else {
+        obj = Constructor as MagicObject<Obj>
+      }
 
-        let target = obj
-        const keys: Record<string, Object> = {}
-        const chain: Object[] = []
+      const magicState: Partial<Obj> = {}
 
-        do {
-          chain.push(target)
-
-          Object.getOwnPropertyNames(target).forEach((key) => {
-            if (!keys.hasOwnProperty(key)) {
-              keys[key] = target
-            }
-          })
-
-          target = Object.getPrototypeOf(target)
-        } while (target !== Object.prototype)
-
-        const store: Partial<Obj> = {}
-        const magic: [(obj: any) => void, any][] = []
-        const states: [(value: any, setState: (value: any) => void) => void, string][] = []
-        const effects: [any[] | (() => any[] | void), string][] = []
-        const layoutEffects: [any[] | (() => any[] | void), string][] = []
-        const contexts: [
-          Context<any>,
-          undefined | ((value: any) => any),
-          string
-        ][] = []
-        const memos: [() => any, any[] | (() => any[] | void), string][] = []
-
-        Object.keys(keys).forEach((key) => {
-          const descriptor = Object.getOwnPropertyDescriptor(keys[key], key)
-
-          const contextInfos = chain
-            .map((target) => getIsContext(target, key))
-            .filter((info) => info !== undefined)
-
-          if (contextInfos.length) {
-            const [context, transform] = contextInfos[0]
-            contexts.push([context, transform, key])
+      obj[magicKey] = obj[magicKey]
+        ? {
+            ...obj[magicKey],
+            state: [...obj[magicKey].state, magicState],
+          }
+        : {
+            store: {},
+            state: [magicState],
           }
 
-          const effectDependencies = chain
-            .map((target) => getIsEffect(target, key))
-            .filter((info) => info !== undefined)
+      const store = obj[magicKey].store
 
-          if (effectDependencies.length) {
-            effects.push(
-              // @ts-ignore
-              [effectDependencies[0], key]
-            )
-          }
+      const keys: Record<string, Object> = {}
 
-          const layoutEffectDependencies = chain
-            .map((target) => getIsLayoutEffect(target, key))
-            .filter((info) => info !== undefined)
+      let target = obj
 
-          if (layoutEffectDependencies.length) {
-            layoutEffects.push(
-              // @ts-ignore
-              [layoutEffectDependencies[0], key]
-            )
-          }
-
-          const memoDependencies = chain
-            .map((target) => getIsMemo(target, key))
-            .filter((info) => info !== undefined)
-
-          if (memoDependencies.length) {
-            if (descriptor?.get && !descriptor?.set) {
-              memos.push([descriptor.get.bind(obj), memoDependencies[0], key])
-
-              Object.defineProperty(obj, key, {
-                // @ts-ignore
-                set: (val) => (store[key] = val),
-                // @ts-ignore
-                get: () => store[key],
-              })
-            } else {
-              throw new TypeError('Memoized properties need to be computed')
-            }
-          } else if (getIsMagic(keys[key], key)) {
-            const targetObj = obj[key as keyof Obj]
-
-            Object.defineProperty(obj, key, {
-              get: () => store[key as keyof Obj],
-            })
-
-            magic.push([
-              (magicObj) => (store[key as keyof Obj] = magicObj),
-              targetObj,
-            ])
-          } else if (chain.find(target => getIsState(target, key))) {
-            states.push([
-              (value, setState) => {
-                store[key as keyof Obj] = value
-                Object.defineProperty(obj, key, {
-                  // @ts-ignore
-                  set: (val) => {
-                    store[key as keyof Obj] = val
-                    setState(val)
-                  },
-                  // @ts-ignore
-                  get: () => store[key],
-                })
-              },
-              key,
-            ])
+      do {
+        Object.getOwnPropertyNames(target).forEach((key) => {
+          if (!keys.hasOwnProperty(key)) {
+            keys[key] = target
           }
         })
 
-        return [
-          obj,
-          magic,
-          states,
-          effects,
-          layoutEffects,
-          memos,
-          contexts,
-        ] as const
-        /* eslint-disable */
-      }, [])
+        target = Object.getPrototypeOf(target)
+      } while (target !== Object.prototype)
+
+      const magic: [(obj: any) => void, string][] = []
+      const states: [
+        (setState: () => void) => void,
+        string
+      ][] = []
+      const effects: [any[] | (() => any[] | void), string][] = []
+      const layoutEffects: [any[] | (() => any[] | void), string][] = []
+      const contexts: [
+        Context<any>,
+        undefined | ((value: any) => any),
+        string
+      ][] = []
+      const memos: [any[] | (() => any[] | void), string][] = []
+
+      Object.keys(keys).forEach((key) => {
+        const descriptor = Object.getOwnPropertyDescriptor(keys[key], key)!
+
+        const contextInfo = getIsContext(obj, key)
+
+        if (contextInfo) {
+          const [context, transform] = contextInfo
+          contexts.push([context, transform, key])
+        }
+
+        const effectDependency = getIsEffect(obj, key)
+
+        if (effectDependency) {
+          effects.push(
+            // @ts-ignore
+            [effectDependency, key]
+          )
+        }
+
+        const layoutEffectDependency = getIsLayoutEffect(obj, key)
+
+        if (layoutEffectDependency) {
+          layoutEffects.push(
+            // @ts-ignore
+            [layoutEffectDependency, key]
+          )
+        }
+
+        const memoDependency = getIsMemo(obj, key)
+
+        if (memoDependency ?? false) {
+          // @ts-ignore
+          const get = descriptor.get.bind(obj)
+
+          memos.push([memoDependency, key])
+
+          Object.defineProperty(obj, key, {
+            configurable: true,
+            // @ts-ignore
+            set: (val) => (store[key] = val),
+            // @ts-ignore
+            get: (() => {
+              let runOnce = false
+
+              return () => {
+                if (inMemoPhase && !runOnce) {
+                  // @ts-ignore
+                  store[key] = get()
+                  runOnce = true
+                  setTimeout(() => (runOnce = false))
+                }
+                // @ts-ignore
+                return store[key]
+              }
+            })(),
+          })
+        } else if (getIsMagic(obj, key)) {
+          Object.defineProperty(obj, key, {
+            configurable: true,
+            get: () => store[key as keyof Obj],
+            set: (value) => (store[key as keyof Obj] = value),
+          })
+
+          magic.push([
+            (newTargetObj) => (store[key as keyof Obj] = newTargetObj),
+            key,
+          ])
+        } else if (getIsStateCollection(obj, key)) {
+          let collection = obj[key as keyof Obj] as Object
+          // @ts-ignore
+          const createProxy = (value) => store[key as keyof Obj] = new Proxy(value, {
+            get: Reflect.get,
+            set: (...args) => {
+              const ret = Reflect.set(...args)
+              doUpdate.current()
+              return ret
+            },
+            deleteProperty: (...args) => {
+              const ret = Reflect.deleteProperty(...args)
+              doUpdate.current()
+              return ret
+            },
+            // @ts-ignore
+            enumerate: Reflect.enumerate,
+            ownKeys: Reflect.ownKeys,
+          }) as Obj[keyof Obj]
+
+          createProxy(collection)
+
+          Object.defineProperty(obj, key, {
+            get: () => store[key as keyof Obj],
+            set: (value: any) => {
+              collection = value
+              createProxy(value)
+              doUpdate()
+            }
+          })
+        } else if (getIsState(obj, key)) {
+          store[key as keyof Obj] = obj[key as keyof Obj]
+
+          Object.defineProperty(obj, key, {
+            configurable: true,
+            // @ts-ignore
+            get: () => store[key],
+            set: (value) => {
+              // @ts-ignore
+              store[key] = value
+              obj[magicKey].state.forEach(
+                // @ts-ignore
+                (magicState) => (magicState[key] = value)
+              )
+            },
+          })
+
+          Object.defineProperty(magicState, key, {
+            // @ts-ignore
+            set: (val) => {
+              doUpdate.current()
+            },
+          })
+        }
+      })
+
+      return [
+        obj,
+        magic,
+        effects,
+        layoutEffects,
+        memos,
+        contexts,
+        magicState,
+      ] as const
+      /* eslint-disable */
+    }, [...memoDeps])
     /* eslint-enable */
 
-    magic.forEach(([init, obj]) => {
-      /* eslint-disable */
-      // @ts-ignore
-      const magicObj = useMagicClass(() => obj)
-      useMemo(() => init(magicObj), [])
-      /* eslint-enable */
-    })
+    useEffect(
+      () => () =>
+        obj[magicKey].state.splice(obj[magicKey].state.indexOf(magicState), 1),
+      []
+    )
 
-    states.forEach(([init, key]) => {
+    magic.forEach(([init, key]) => {
       /* eslint-disable */
       // @ts-ignore
-      const [value, setState] = useState(() => obj[key])
-      useMemo(() => init(value, setState), [])
+      const magicObj = useMagicClass(obj[key])
+      // @ts-ignore
+      useMemo(() => init(magicObj), [obj[key]])
       /* eslint-enable */
     })
 
@@ -250,16 +357,35 @@ export const createUseMagicClass =
       /* eslint-enable */
     })
 
-    memos.forEach(([get, dependencies, key]) => {
+    // @ts-ignore
+    useMemo(() => {
+      inMemoPhase = true
+    })
+
+    memos.forEach(([dependencies, key]) => {
       /* eslint-disable */
       //@ts-ignore
       useMemo(
         // @ts-ignore
-        () => (obj[key] = get()),
+        () => (obj[key] = obj[key]),
         // @ts-ignore
-        Array.isArray(dependencies) ? dependencies : dependencies(obj)
+        dependencies && [
+          // @ts-ignore
+          ...(Array.isArray(dependencies) ? dependencies : dependencies(obj)),
+          ...memoDeps,
+        ]
         /* eslint-enable */
       )
+    })
+
+    // @ts-ignore
+    useMemo(() => {
+      inMemoPhase = false
+    })
+
+    // @ts-ignore
+    useEffect(() => {
+      inEffectPhase = true
     })
 
     effects.forEach(([dependencies, key]) => {
@@ -273,7 +399,10 @@ export const createUseMagicClass =
           }
         },
         // @ts-ignore
-        Array.isArray(dependencies) ? dependencies : dependencies(obj)
+        dependencies && Array.isArray(dependencies)
+          ? dependencies
+          : // @ts-ignore
+            dependencies(obj)
         /* eslint-enable */
       )
     })
@@ -289,9 +418,17 @@ export const createUseMagicClass =
           }
         },
         // @ts-ignore
-        Array.isArray(dependencies) ? dependencies : dependencies(obj)
+        dependencies && Array.isArray(dependencies)
+          ? dependencies
+          : // @ts-ignore
+            dependencies(obj)
         /* eslint-enable */
       )
+    })
+
+    // @ts-ignore
+    useEffect(() => {
+      inEffectPhase = false
     })
 
     return obj

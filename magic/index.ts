@@ -1,1 +1,9 @@
-export { isState, isEffect, isLayoutEffect, isContext, isMagic, isMemo } from './src/useMagicClass'
+export {
+  isState,
+  isStateCollection,
+  isEffect,
+  isLayoutEffect,
+  isContext,
+  isMagic,
+  isMemo,
+} from './src/useMagicClass'

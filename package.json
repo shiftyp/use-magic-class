@@ -2,6 +2,7 @@
     "private": true,
     "workspaces": [
         "./magic",
-        "./examples/base/*"
+        "./examples/base/*",
+        "./examples/emoji-island"
     ]
 }

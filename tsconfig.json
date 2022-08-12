@@ -5,6 +5,7 @@
     { "path": "./magic/__tests__" },
     { "path": "./examples/basic/common" },
     { "path": "./examples/basic/react" },
-    { "path": "./examples/basic/preact" }
+    { "path": "./examples/basic/preact" },
+    { "path": "./examples/emoji-island" },
   ]
 }
