@@ -4,6 +4,7 @@ import { Entities, Entity, Space } from './entities'
 const pickRandom = <T>(arr: T[]): T => {
   return arr[Math.floor(Math.random() * arr.length)]
 }
+
 export class Game {
   @isState
   public scale = 7
@@ -190,25 +191,23 @@ export class Game {
     frame = window.requestAnimationFrame(testFramerate)
 
     const interval = setInterval(() => {
-      window.requestAnimationFrame(() => {
-        const time = performance.now()
-        const diff = time - lastTime
+      const time = performance.now()
+      const diff = time - lastTime
 
-        lastTime = time
+      lastTime = time
 
-        this.entities.forEach((entity) => {
-          const lastActed = this.lastActed.get(entity)
+      this.entities.forEach((entity) => {
+        const lastActed = this.lastActed.get(entity)
 
-          if (lastActed !== undefined && lastActed + diff > entity.speed) {
-            entity.act()
-            this.lastActed.set(entity, 0)
-          } else {
-            this.lastActed.set(
-              entity,
-              lastActed === undefined ? 0 : lastActed + diff
-            )
-          }
-        })
+        if (lastActed !== undefined && lastActed + diff > entity.speed) {
+          entity.act()
+          this.lastActed.set(entity, 0)
+        } else {
+          this.lastActed.set(
+            entity,
+            lastActed === undefined ? 0 : lastActed + diff
+          )
+        }
       })
     }, 100)
 
