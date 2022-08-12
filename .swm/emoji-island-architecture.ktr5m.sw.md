@@ -17,9 +17,12 @@ This is the game loop
 <!-- NOTE-swimm-snippet: the lines below link your snippet to Swimm -->
 ### 📄 examples/emoji-island/hooks/game.ts
 ```typescript
-⬜ 192        const interval = setInterval(() => {
-⬜ 193          window.requestAnimationFrame(() => {
-⬜ 194            const time = performance.now()
+⬜ 189    
+⬜ 190        frame = window.requestAnimationFrame(testFramerate)
+⬜ 191    
+🟩 192        const interval = setInterval(() => {
+🟩 193          window.requestAnimationFrame(() => {
+🟩 194            const time = performance.now()
 🟩 195            const diff = time - lastTime
 🟩 196    
 🟩 197            lastTime = time
@@ -36,9 +39,12 @@ This is the game loop
 🟩 208                  lastActed === undefined ? 0 : lastActed + diff
 🟩 209                )
 🟩 210              }
-⬜ 211            })
-⬜ 212          })
-⬜ 213        }, 100)
+🟩 211            })
+🟩 212          })
+🟩 213        }, 100)
+⬜ 214    
+⬜ 215        return () => {
+⬜ 216          if (frame) cancelAnimationFrame(frame)
 ```
 
 <br/>
